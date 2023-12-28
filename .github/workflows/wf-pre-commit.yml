@@ -29,7 +29,7 @@ on:
       skip-hooks:
         description: "Comma-separated list of hooks to skip"
         required: false
-        default: "no-commit-to-branch"
+        default: ""
         type: string
 
 defaults:
@@ -42,9 +42,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/fabasoad/pre-commit-container:latest
-    env:
-      SKIP: ${{ inputs.skip-hooks }}
     steps:
+      - name: Prepare skip hooks
+        env:
+          INPUT_SKIP_HOOKS: "${{ inputs.skip-hooks }}"
+          DEFAULT_SKIP_HOOKS: "no-commit-to-branch"
+        run: |
+          skip_hooks="${DEFAULT_SKIP_HOOKS}"
+          if [ -n "${INPUT_SKIP_HOOKS}" ]; then
+            skip_hooks="${skip_hooks}, ${INPUT_SKIP_HOOKS}"
+          fi
+          echo "SKIP=${skip_hooks}" >> "$GITHUB_ENV"
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
         with:
@@ -57,12 +65,12 @@ jobs:
           INPUT_PRE_COMMIT_CONFIG_PATH: ${{ inputs.pre-commit-config-path }}
           INPUT_TARGET_BRANCH: ${{ inputs.target-branch }}
         run: |
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --hook-stage commit
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --hook-stage push
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage commit
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage push
       - name: Run pre-commit on all files
         if: ${{ inputs.run-on-all-files }}
         env:
           INPUT_PRE_COMMIT_CONFIG_PATH: ${{ inputs.pre-commit-config-path }}
         run: |
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --hook-stage commit
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --hook-stage push
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage commit
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage push
