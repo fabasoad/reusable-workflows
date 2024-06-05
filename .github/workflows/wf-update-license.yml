@@ -44,7 +44,7 @@ jobs:
     name: Modify
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ${{ github.repository }}
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
