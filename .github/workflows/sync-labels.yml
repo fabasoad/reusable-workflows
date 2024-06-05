@@ -12,5 +12,3 @@ jobs:
   sync-labels:
     name: Labels
     uses: fabasoad/reusable-workflows/.github/workflows/wf-sync-labels.yml@feat/sync-labels
-    secrets:
-      github-token: "${{ github.token }}"
