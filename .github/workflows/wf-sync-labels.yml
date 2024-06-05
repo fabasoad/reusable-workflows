@@ -13,7 +13,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Download manifest file
+        id: manifest-file
+        run: |
+          path="${RUNNER_TEMP}/wf-sync-labels/labels.yml"
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -o "${path}" \
+            "https://raw.githubusercontent.com/fabasoad/reusable-workflows/main/.github/labels.yml"
+          echo "path=${path}" >> "$GITHUB_OUTPUT"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          manifest: "${{ steps.manifest-file.outputs.path }}"
