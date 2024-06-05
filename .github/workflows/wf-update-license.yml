@@ -1,0 +1,64 @@
+---
+name: LICENSE
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      github-token:
+        description: |
+          GitHub token used to fetch the repository and update LICENSE file.
+        required: false
+        default: ${{ github.token }}
+        type: string
+      assignees:
+        description: |
+          Comma-separated list with usernames of people to assign when pull request
+          is created.
+        required: false
+        default: ${{ github.repository_owner }}
+        type: string
+      labels:
+        description: |
+          Comma-separated list of labels to add when pull request is created.
+        required: false
+        default: enhancement
+        type: string
+      pr-title:
+        description: |
+          The title of the new pull request. Supports substituting variable
+          {{currentYear}}.
+        required: false
+        default: Update license copyright year to {{currentYear}}
+        type: string
+      pr-body:
+        description: |
+          The contents of the pull request. Supports substituting variable
+          {{currentYear}}.
+        required: false
+        default: |
+          ## Changelog
+
+          - Update license copyright year to {{currentYear}}
+
+          ---
+
+          Powered by [FantasticFiasco/action-update-license-year](https://github.com/FantasticFiasco/action-update-license-year)
+        type: string
+
+jobs:
+  run:
+    name: Update year
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+        with:
+          token: ${{ inputs.github-token }}
+      - name: Update LICENSE file
+        uses: FantasticFiasco/action-update-license-year@v3
+        with:
+          token: ${{ inputs.github-token }}
+          assignees: ${{ inputs.assignees }}
+          labels: ${{ inputs.labels }}
+          prTitle: ${{ inputs.pr-title }}
+          prBody: ${{ inputs.pr-body }}
