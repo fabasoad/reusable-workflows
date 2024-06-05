@@ -1,5 +1,5 @@
 ---
-name: Maintenance
+name: Update license
 
 on: # yamllint disable-line rule:truthy
   schedule:
@@ -9,3 +9,5 @@ jobs:
   update-license:
     name: LICENSE
     uses: fabasoad/reusable-workflows/.github/workflows/wf-update-license.yml@main
+    secrets:
+      github-token: "${{ github.token }}"

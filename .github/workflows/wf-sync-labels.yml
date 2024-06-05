@@ -3,11 +3,7 @@ name: Labels
 
 on: # yamllint disable-line rule:truthy
   workflow_call:
-    secrets:
-      github-token:
-        description: |
-          GitHub token used to fetch the repository and update LICENSE file.
-        required: true
+    secrets: inherit # pragma: allowlist secret
 
 jobs:
   label-syncer:
@@ -17,8 +13,8 @@ jobs:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
         with:
-          token: "${{ secrets.github-token }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
         env:
-          GITHUB_TOKEN: "${{ secrets.github-token }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

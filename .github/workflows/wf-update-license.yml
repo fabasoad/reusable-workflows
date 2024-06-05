@@ -3,13 +3,8 @@ name: LICENSE
 
 on: # yamllint disable-line rule:truthy
   workflow_call:
+    secrets: inherit # pragma: allowlist secret
     inputs:
-      github-token:
-        description: |
-          GitHub token used to fetch the repository and update LICENSE file.
-        required: false
-        default: ${{ github.token }}
-        type: string
       assignees:
         description: |
           Comma-separated list with usernames of people to assign when pull request
@@ -46,18 +41,18 @@ on: # yamllint disable-line rule:truthy
         type: string
 
 jobs:
-  run:
-    name: Update year
+  modify:
+    name: Modify
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
         with:
-          token: ${{ inputs.github-token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Update LICENSE file
         uses: FantasticFiasco/action-update-license-year@v3
         with:
-          token: ${{ inputs.github-token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           assignees: ${{ inputs.assignees }}
           labels: ${{ inputs.labels }}
           prTitle: ${{ inputs.pr-title }}
