@@ -9,3 +9,4 @@ jobs:
   update-license:
     name: LICENSE
     uses: fabasoad/reusable-workflows/.github/workflows/wf-update-license.yml@main
+    secrets: inherit # pragma: allowlist secret
