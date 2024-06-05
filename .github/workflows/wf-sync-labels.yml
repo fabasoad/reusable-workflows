@@ -2,7 +2,15 @@
 name: Labels
 
 on: # yamllint disable-line rule:truthy
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      manifest-file-ref:
+        description: |
+          reusable-workflows repository branch name from where you want to use
+          labels.yml manifest file.
+        required: false
+        default: "main"
+        type: string
 
 jobs:
   label-syncer:
@@ -13,7 +21,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Download manifest file
+        id: manifest-file
+        run: |
+          path="${GITHUB_WORKSPACE}/.github/labels.yml"
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -o "${path}" \
+            "https://raw.githubusercontent.com/fabasoad/reusable-workflows/${{ inputs.manifest-file-ref }}/.github/labels.yml"
+          echo "path=${path}" >> "$GITHUB_OUTPUT"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
