@@ -16,7 +16,9 @@ jobs:
       - name: Download manifest file
         id: manifest-file
         run: |
-          path="${RUNNER_TEMP}/wf-sync-labels/labels.yml"
+          dir="${RUNNER_TEMP}/wf-sync-labels"
+          mkdir -p "${dir}"
+          path="${dir}/labels.yml"
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -o "${path}" \
             "https://raw.githubusercontent.com/fabasoad/reusable-workflows/main/.github/labels.yml"
