@@ -2,8 +2,7 @@
 name: Labels
 
 on: # yamllint disable-line rule:truthy
-  workflow_call:
-    secrets: inherit # pragma: allowlist secret
+  workflow_call: {}
 
 jobs:
   label-syncer:
