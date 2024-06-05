@@ -40,8 +40,8 @@ on: # yamllint disable-line rule:truthy
         type: string
 
 jobs:
-  modify:
-    name: Modify
+  update:
+    name: Update
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
