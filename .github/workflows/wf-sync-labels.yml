@@ -16,8 +16,7 @@ jobs:
       - name: Download manifest file
         id: manifest-file
         run: |
-          dir="${RUNNER_TEMP}/wf-sync-labels"
-          mkdir -p "${dir}"
+          dir="${{ github.workspace }}/.github"
           path="${dir}/labels.yml"
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -o "${path}" \
@@ -27,4 +26,3 @@ jobs:
         uses: micnncim/action-label-syncer@v1
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
-          manifest: "${{ steps.manifest-file.outputs.path }}"
