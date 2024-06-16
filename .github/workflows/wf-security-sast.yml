@@ -8,9 +8,21 @@ on: # yamllint disable-line rule:truthy
         default: true
         type: boolean
       code-scanning-languages:
-        description: A comma-separated list of languages for SAST analysis.
+        description: |
+          A comma-separated list of languages for SAST analysis. Defaults to
+          "javascript".
         required: false
         default: "javascript"
+        type: string
+      image-run:
+        description: Whether to run Image analysis or not. Defaults to false.
+        required: false
+        default: false
+        type: boolean
+      image-id:
+        description: Image id, digest or full name to scan. Defaults to "".
+        required: false
+        default: ""
         type: string
       sca-run:
         description: Whether to run SCA analysis or not. Defaults to true.
@@ -18,48 +30,48 @@ on: # yamllint disable-line rule:truthy
         default: true
         type: boolean
       sca-path:
-        description: Path to the directory for SCA.
+        description: Path to the directory for SCA. Defaults to "".
         required: false
         default: "."
         type: string
       ghas-category:
-        description: String used by GHAS for matching analyses.
+        description: String used by GHAS for matching analyses. Defaults to "default".
         required: false
         default: "default"
         type: string
 
 jobs:
-  codeql:
-    name: CodeQL
+  code-scanning:
+    name: Code Scanning
     if: inputs.code-scanning-run
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
-      - name: Initialize CodeQL
+      - name: Initialize
         uses: github/codeql-action/init@v3
         with:
           languages: "${{ inputs.code-scanning-languages }}"
-      - name: Perform CodeQL Analysis
-        id: codeql-analysis
+      - name: Perform analysis
+        id: code-scanning
         uses: github/codeql-action/analyze@v3
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          category: "codeql-${{ inputs.ghas-category }}"
-          sarif_file: "${{ steps.codeql-analysis.outputs.sarif-output }}"
-  grype:
-    name: Grype
+          category: "code-scanning-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.code-scanning.outputs.sarif-output }}"
+  sca:
+    name: SCA
     if: inputs.sca-run
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
-      - name: Scan project
-        id: grype-scan
+      - name: Perform analysis
+        id: sca
         uses: anchore/scan-action@v3
         with:
           by-cve: "true"
@@ -68,5 +80,25 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          category: "grype-${{ inputs.ghas-category }}"
-          sarif_file: "${{ steps.grype-scan.outputs.sarif }}"
+          category: "sca-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.sca.outputs.sarif }}"
+  image:
+    name: Image
+    if: inputs.image-run && inputs.image-id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Perform analysis
+        id: image
+        uses: anchore/scan-action@v3
+        with:
+          by-cve: "true"
+          image: "${{ inputs.image-id }}"
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "image-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.image.outputs.sarif }}"

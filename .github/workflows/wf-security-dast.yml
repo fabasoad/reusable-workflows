@@ -48,8 +48,3 @@ jobs:
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: zap_scan
