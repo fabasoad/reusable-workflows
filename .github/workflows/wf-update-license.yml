@@ -42,15 +42,13 @@ jobs:
     name: Update
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Update LICENSE file
         uses: FantasticFiasco/action-update-license-year@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: ${{ inputs.assignees }}
-          labels: ${{ inputs.labels }}
-          prTitle: ${{ inputs.pr-title }}
-          prBody: ${{ inputs.pr-body }}
+          token: "${{ github.token }}"
+          assignees: "${{ inputs.assignees }}"
+          labels: "${{ inputs.labels }}"
+          prTitle: "${{ inputs.pr-title }}"
+          prBody: "${{ inputs.pr-body }}"
