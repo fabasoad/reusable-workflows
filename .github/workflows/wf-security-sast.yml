@@ -1,6 +1,4 @@
 ---
-name: SAST
-
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
