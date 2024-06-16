@@ -1,0 +1,72 @@
+---
+name: SAST
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      codeql-run:
+        description: Whether to run CodeQL analysis or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      codeql-languages:
+        description: A comma-separated list of CodeQL languages to analyze.
+        required: false
+        default: "javascript"
+        type: string
+      grype-run:
+        description: Whether to run Grype analysis or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      grype-path:
+        description: Path to the directory for SCA.
+        required: false
+        default: "."
+        type: string
+      ghas-category:
+        description: String used by GHAS for matching analyses.
+        required: false
+        default: "default"
+        type: string
+
+jobs:
+  codeql:
+    name: CodeQL
+    if: inputs.codeql-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: "${{ inputs.codeql-languages }}"
+      - name: Perform CodeQL Analysis
+        id: codeql-analysis
+        uses: github/codeql-action/analyze@v3
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "codeql-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.codeql-analysis.outputs.sarif-output }}"
+  grype:
+    name: Grype
+    if: inputs.grype-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Scan project
+        id: grype-scan
+        uses: anchore/scan-action@v3
+        with:
+          by-cve: "true"
+          path: "${{ inputs.grype-path }}"
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "sca-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.grype-scan.outputs.sarif }}"

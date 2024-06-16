@@ -1,0 +1,64 @@
+---
+name: DAST
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      nuclei-run:
+        description: Whether to run Nuclei or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      zap-run:
+        description: Whether to run ZAP or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      target-url:
+        description: Target URL to perform DAST analysis.
+        required: false
+        default: ""
+        type: string
+      ghas-category:
+        description: String used by GHAS for matching analyses.
+        required: false
+        default: "default"
+        type: string
+
+jobs:
+  nuclei:
+    name: Nuclei
+    if: inputs.nuclei-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        uses: projectdiscovery/nuclei-action@v2.0.1
+        with:
+          target: "${{ inputs.target-url }}"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei.log
+          path: nuclei.log
+      - name: Upload to GHAS
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "nuclei-${{ inputs.ghas-category }}"
+          sarif_file: nuclei.sarif
+  zap:
+    name: ZAP
+    if: inputs.zap-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    container:
+      image: zaproxy/zap-stable:2.14.0
+      options: --user root
+    steps:
+      - name: Perform scanning
+        env:
+          INPUT_TARGET_URL: "${{ inputs.target-url }}"
+        run: zap-baseline.py -t "${INPUT_TARGET_URL}" -J zap-output.json
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-output.json
+          path: zap-output.json

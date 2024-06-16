@@ -8,6 +8,5 @@ on: # yamllint disable-line rule:truthy
       - main
 
 jobs:
-  security:
-    name: Security
-    uses: fabasoad/reusable-workflows/.github/workflows/wf-security.yml@feat/security
+  sast:
+    uses: fabasoad/reusable-workflows/.github/workflows/wf-security-sast.yml@feat/security
