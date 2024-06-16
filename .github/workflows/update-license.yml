@@ -1,5 +1,5 @@
 ---
-name: Update License
+name: License
 
 on: # yamllint disable-line rule:truthy
   pull_request:
@@ -9,6 +9,6 @@ on: # yamllint disable-line rule:truthy
     - cron: "0 5 1 1 *"
 
 jobs:
-  update-license:
-    name: LICENSE
+  maintenance:
+    name: Maintenance
     uses: fabasoad/reusable-workflows/.github/workflows/wf-update-license.yml@main

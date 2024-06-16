@@ -11,7 +11,7 @@ on: # yamllint disable-line rule:truthy
         type: string
 
 jobs:
-  label-syncer:
+  sync:
     name: Sync
     runs-on: ubuntu-latest
     steps:
