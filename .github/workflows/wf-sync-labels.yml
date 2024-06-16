@@ -1,6 +1,4 @@
 ---
-name: Labels
-
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
@@ -22,13 +20,11 @@ jobs:
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Download manifest file
-        id: manifest-file
         run: |
           path="${GITHUB_WORKSPACE}/.github/labels.yml"
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -o "${path}" \
             "https://raw.githubusercontent.com/fabasoad/reusable-workflows/${{ inputs.manifest-file-ref }}/.github/labels.yml"
-          echo "path=${path}" >> "$GITHUB_OUTPUT"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
         with:

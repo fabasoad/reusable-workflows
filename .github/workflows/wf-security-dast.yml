@@ -1,0 +1,50 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      dast-run:
+        description: Whether to run DAST or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      target-url:
+        description: Target URL to perform DAST analysis.
+        required: false
+        default: ""
+        type: string
+      ghas-category:
+        description: String used by GHAS for matching analyses.
+        required: false
+        default: "default"
+        type: string
+
+jobs:
+  nuclei:
+    name: Nuclei
+    if: inputs.dast-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        uses: projectdiscovery/nuclei-action@v2.0.1
+        with:
+          target: "${{ inputs.target-url }}"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-log
+          path: nuclei.log
+      - name: Upload to GHAS
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "nuclei-${{ inputs.ghas-category }}"
+          sarif_file: nuclei.sarif
+  zap:
+    name: ZAP
+    if: inputs.dast-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: "${{ inputs.target-url }}"
+          allow_issue_writing: "false"

@@ -1,0 +1,104 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      code-scanning-run:
+        description: Whether to run SAST analysis or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      code-scanning-languages:
+        description: |
+          A comma-separated list of languages for SAST analysis. Defaults to
+          "javascript".
+        required: false
+        default: "javascript"
+        type: string
+      image-run:
+        description: Whether to run Image analysis or not. Defaults to false.
+        required: false
+        default: false
+        type: boolean
+      image-id:
+        description: Image id, digest or full name to scan. Defaults to "".
+        required: false
+        default: ""
+        type: string
+      sca-run:
+        description: Whether to run SCA analysis or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      sca-path:
+        description: Path to the directory for SCA. Defaults to "".
+        required: false
+        default: "."
+        type: string
+      ghas-category:
+        description: String used by GHAS for matching analyses. Defaults to "default".
+        required: false
+        default: "default"
+        type: string
+
+jobs:
+  code-scanning:
+    name: Code Scanning
+    if: inputs.code-scanning-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Initialize
+        uses: github/codeql-action/init@v3
+        with:
+          languages: "${{ inputs.code-scanning-languages }}"
+      - name: Perform analysis
+        id: code-scanning
+        uses: github/codeql-action/analyze@v3
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "code-scanning-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.code-scanning.outputs.sarif-output }}"
+  sca:
+    name: SCA
+    if: inputs.sca-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Perform analysis
+        id: sca
+        uses: anchore/scan-action@v3
+        with:
+          by-cve: "true"
+          path: "${{ inputs.sca-path }}"
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "sca-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.sca.outputs.sarif }}"
+  image:
+    name: Image
+    if: inputs.image-run && inputs.image-id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Perform analysis
+        id: image
+        uses: anchore/scan-action@v3
+        with:
+          by-cve: "true"
+          image: "${{ inputs.image-id }}"
+      - name: Upload to GHAS
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: "image-${{ inputs.ghas-category }}"
+          sarif_file: "${{ steps.image.outputs.sarif }}"
