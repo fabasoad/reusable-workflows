@@ -2,13 +2,8 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      nuclei-run:
-        description: Whether to run Nuclei or not. Defaults to true.
-        required: false
-        default: true
-        type: boolean
-      zap-run:
-        description: Whether to run ZAP or not. Defaults to true.
+      dast-run:
+        description: Whether to run DAST or not. Defaults to true.
         required: false
         default: true
         type: boolean
@@ -26,7 +21,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
   nuclei:
     name: Nuclei
-    if: inputs.nuclei-run && inputs.target-url != ''
+    if: inputs.dast-run && inputs.target-url != ''
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning
@@ -36,7 +31,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei.log
+          name: nuclei-log
           path: nuclei.log
       - name: Upload to GHAS
         uses: github/codeql-action/upload-sarif@v3
@@ -45,7 +40,7 @@ jobs:
           sarif_file: nuclei.sarif
   zap:
     name: ZAP
-    if: inputs.zap-run && inputs.target-url != ''
+    if: inputs.dast-run && inputs.target-url != ''
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning

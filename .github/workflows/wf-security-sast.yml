@@ -2,31 +2,26 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      codeql-run:
-        description: Whether to run CodeQL analysis or not. Defaults to true.
+      code-scanning-run:
+        description: Whether to run SAST analysis or not. Defaults to true.
         required: false
-        default: false
+        default: true
         type: boolean
-      codeql-languages:
-        description: A comma-separated list of CodeQL languages to analyze.
+      code-scanning-languages:
+        description: A comma-separated list of languages for SAST analysis.
         required: false
         default: "javascript"
         type: string
-      grype-run:
-        description: Whether to run Grype analysis or not. Defaults to true.
+      sca-run:
+        description: Whether to run SCA analysis or not. Defaults to true.
         required: false
-        default: false
+        default: true
         type: boolean
-      grype-path:
+      sca-path:
         description: Path to the directory for SCA.
         required: false
         default: "."
         type: string
-      yarn-audit-run:
-        description: Whether to run Yarn Audit analysis or not. Defaults to true.
-        required: false
-        default: false
-        type: boolean
       ghas-category:
         description: String used by GHAS for matching analyses.
         required: false
@@ -36,7 +31,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
   codeql:
     name: CodeQL
-    if: inputs.codeql-run
+    if: inputs.code-scanning-run
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -45,7 +40,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: "${{ inputs.codeql-languages }}"
+          languages: "${{ inputs.code-scanning-languages }}"
       - name: Perform CodeQL Analysis
         id: codeql-analysis
         uses: github/codeql-action/analyze@v3
@@ -57,7 +52,7 @@ jobs:
           sarif_file: "${{ steps.codeql-analysis.outputs.sarif-output }}"
   grype:
     name: Grype
-    if: inputs.grype-run
+    if: inputs.sca-run
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -68,19 +63,10 @@ jobs:
         uses: anchore/scan-action@v3
         with:
           by-cve: "true"
-          path: "${{ inputs.grype-path }}"
+          path: "${{ inputs.sca-path }}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          category: "sca-${{ inputs.ghas-category }}"
+          category: "grype-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.grype-scan.outputs.sarif }}"
-  yarn-audit:
-    name: Yarn audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
-      - name: Yarn audit
-        run: yarn npm audit --all
