@@ -5,7 +5,7 @@ on: # yamllint disable-line rule:truthy
       codeql-run:
         description: Whether to run CodeQL analysis or not. Defaults to true.
         required: false
-        default: true
+        default: false
         type: boolean
       codeql-languages:
         description: A comma-separated list of CodeQL languages to analyze.
@@ -15,13 +15,18 @@ on: # yamllint disable-line rule:truthy
       grype-run:
         description: Whether to run Grype analysis or not. Defaults to true.
         required: false
-        default: true
+        default: false
         type: boolean
       grype-path:
         description: Path to the directory for SCA.
         required: false
         default: "."
         type: string
+      yarn-audit-run:
+        description: Whether to run Yarn Audit analysis or not. Defaults to true.
+        required: false
+        default: false
+        type: boolean
       ghas-category:
         description: String used by GHAS for matching analyses.
         required: false
@@ -33,6 +38,7 @@ jobs:
     name: CodeQL
     if: inputs.codeql-run
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
@@ -53,6 +59,7 @@ jobs:
     name: Grype
     if: inputs.grype-run
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
@@ -68,3 +75,12 @@ jobs:
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.grype-scan.outputs.sarif }}"
+  yarn-audit:
+    name: Yarn audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Yarn audit
+        run: yarn npm audit --all

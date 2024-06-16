@@ -47,16 +47,14 @@ jobs:
     name: ZAP
     if: inputs.zap-run && inputs.target-url != ''
     runs-on: ubuntu-latest
-    container:
-      image: zaproxy/zap-stable:2.14.0
-      options: --user root
     steps:
       - name: Perform scanning
-        env:
-          INPUT_TARGET_URL: "${{ inputs.target-url }}"
-        run: zap-baseline.py -t "${INPUT_TARGET_URL}" -J zap-output.json
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: "${{ inputs.target-url }}"
+          allow_issue_writing: "false"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zap-output.json
-          path: zap-output.json
+          name: zap-report
+          path: zap_scan
