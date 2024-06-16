@@ -15,17 +15,15 @@ jobs:
     name: Sync
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
-        with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Download manifest file
         run: |
           path="${GITHUB_WORKSPACE}/.github/labels.yml"
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          curl -H "Authorization: token ${{ github.token }}" \
             -o "${path}" \
             "https://raw.githubusercontent.com/fabasoad/reusable-workflows/${{ inputs.manifest-file-ref }}/.github/labels.yml"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          token: "${{ github.token }}"
