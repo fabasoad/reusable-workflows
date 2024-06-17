@@ -1,0 +1,64 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      cache:
+        description: |
+          Used to specify a package manager for caching in the default directory.
+          Supported values: npm, yarn, pnpm.
+        required: false
+        default: "yarn"
+        type: string
+      lint-command:
+        description: |
+          Command that is specified in manifest file to run with package manager,
+          e.g. yarn run <lint-command>
+        required: false
+        default: "lint"
+        type: string
+      node-version-file:
+        description: |
+          File containing the version Spec of the version to use. Examples:
+          package.json, .nvmrc, .node-version, .tool-versions.
+        required: false
+        default: ".tool-versions"
+        type: string
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  js-lint:
+    name: JS Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Prepare metadata
+        id: metadata
+        env:
+          INPUT_CACHE: "${{ inputs.cache }}"
+        run: |
+          cache_dependency_path="package-lock.json"
+          if [ "${INPUT_CACHE}" = "yarn" ]; then
+            cache_dependency_path="yarn.lock"
+          elif [ "${INPUT_CACHE}" = "pnpm" ]; then
+            cache_dependency_path="pnpm-lock.yaml"
+          fi
+          echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "${{ inputs.node-version-file }}"
+          cache: "${{ inputs.cache }}"
+          cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
+      - name: Compile
+        env:
+          INPUT_CACHE: "${{ inputs.cache }}"
+        run: ${INPUT_CACHE} install
+      - name: Perform linting
+        env:
+          INPUT_CACHE: "${{ inputs.cache }}"
+          INPUT_LINT_COMMAND: "${{ inputs.lint-command }}"
+        run: ${INPUT_CACHE} run ${INPUT_LINT_COMMAND}
