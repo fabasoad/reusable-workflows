@@ -29,8 +29,8 @@ defaults:
     shell: sh
 
 jobs:
-  js-lint:
-    name: JS Lint
+  biome:
+    name: Biome
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ github.repository }}
