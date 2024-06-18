@@ -2,7 +2,7 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      cache:
+      package-manager:
         description: |
           Used to specify a package manager for caching in the default directory.
           Supported values: npm, yarn, pnpm.
@@ -38,12 +38,12 @@ jobs:
       - name: Prepare metadata
         id: metadata
         env:
-          INPUT_CACHE: "${{ inputs.cache }}"
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: |
           cache_dependency_path="package-lock.json"
-          if [ "${INPUT_CACHE}" = "yarn" ]; then
+          if [ "${INPUT_PACKAGE_MANAGER}" = "yarn" ]; then
             cache_dependency_path="yarn.lock"
-          elif [ "${INPUT_CACHE}" = "pnpm" ]; then
+          elif [ "${INPUT_PACKAGE_MANAGER}" = "pnpm" ]; then
             cache_dependency_path="pnpm-lock.yaml"
           fi
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
@@ -51,14 +51,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: "${{ inputs.node-version-file }}"
-          cache: "${{ inputs.cache }}"
+          cache: "${{ inputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Compile
         env:
-          INPUT_CACHE: "${{ inputs.cache }}"
-        run: ${INPUT_CACHE} install
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: ${INPUT_PACKAGE_MANAGER} install
       - name: Perform linting
         env:
-          INPUT_CACHE: "${{ inputs.cache }}"
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_LINT_COMMAND: "${{ inputs.lint-command }}"
-        run: ${INPUT_CACHE} run ${INPUT_LINT_COMMAND}
+        run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_LINT_COMMAND}
