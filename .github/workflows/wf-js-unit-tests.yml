@@ -1,0 +1,82 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    secrets:
+      code-climate-test-reporter-id:
+        description: Code Climate test reporter ID.
+        required: true
+    inputs:
+      package-manager:
+        description: |
+          Used to specify a package manager for caching in the default directory.
+          Supported values: npm, yarn, pnpm.
+        required: false
+        default: "yarn"
+        type: string
+      test-command:
+        description: |
+          Command that is specified in manifest file to run with package manager,
+          e.g. yarn run <test-command>
+        required: false
+        default: "test"
+        type: string
+      node-version-file:
+        description: |
+          File containing the version Spec of the version to use. Examples:
+          package.json, .nvmrc, .node-version, .tool-versions.
+        required: false
+        default: ".tool-versions"
+        type: string
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  unit-tests-all:
+    name: All
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Prepare metadata
+        id: metadata
+        env:
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: |
+          cache_key="${RUNNER_OS}-${INPUT_PACKAGE_MANAGER}"
+          if [ "${INPUT_PACKAGE_MANAGER}" = "yarn" ]; then
+            cache_key="${cache_key}-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/.yarnrc.yml') }}"
+          elif [ "${INPUT_PACKAGE_MANAGER}" = "pnpm" ]; then
+            cache_key="${cache_key}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+          else
+            cache_key="${cache_key}-${{ hashFiles('**/package-lock.json') }}"
+          fi
+          echo "cache-key=${cache_key}" >> "$GITHUB_OUTPUT"
+      - name: Cache ${{ inputs.package-manager }} dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: "node_modules"
+          key: "${{ steps.metadata.outputs.cache-key }}"
+          restore-keys: "${{ runner.os }}-${{ inputs.package-manager }}-"
+      - name: Compile
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        env:
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: ${INPUT_PACKAGE_MANAGER} install
+      - name: Unit tests
+        if: github.ref != 'refs/heads/main'
+        env:
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: ${INPUT_PACKAGE_MANAGER} run test
+      - name: Unit tests with coverage
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: paambaati/codeclimate-action@v6.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.code-climate-test-reporter-id }}
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        with:
+          coverageCommand: ${INPUT_PACKAGE_MANAGER} run test
+          debug: true
