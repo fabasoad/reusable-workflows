@@ -15,8 +15,8 @@ on: # yamllint disable-line rule:truthy
         type: string
       test-command:
         description: |
-          Command that is specified in manifest file to run with package manager,
-          e.g. yarn run <test-command>
+          Command that is specified in manifest file to run with package manager:
+          <package-manager> run <test-command> (e.g. "yarn run test")
         required: false
         default: "test"
         type: string
@@ -70,7 +70,8 @@ jobs:
         if: github.ref != 'refs/heads/main'
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
-        run: ${INPUT_PACKAGE_MANAGER} run test
+          INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
+        run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: paambaati/codeclimate-action@v6.0.0
@@ -78,5 +79,5 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.code-climate-test-reporter-id }}
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         with:
-          coverageCommand: ${INPUT_PACKAGE_MANAGER} run test
+          coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           debug: true
