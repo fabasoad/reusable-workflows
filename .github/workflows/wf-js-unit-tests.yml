@@ -78,5 +78,5 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.code-climate-test-reporter-id }}
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         with:
-          coverageCommand: ${INPUT_PACKAGE_MANAGER} run test
+          coverageCommand: ${{ inputs.package-manager }} run test
           debug: true
