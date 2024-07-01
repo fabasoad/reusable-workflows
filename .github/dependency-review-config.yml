@@ -1,0 +1,4 @@
+---
+comment_summary_in_pr: "on-failure"
+fail_on_severity: "low"
+license_check: "false"

@@ -82,6 +82,18 @@ jobs:
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.sca.outputs.sarif }}"
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Perform review
+        uses: actions/dependency-review-action@v4
+        with:
+          config-file: "fabasoad/reusable-workflows/.github/dependency-review-config.yml@main"
+          external-repo-token: "${{ github.token }}"
   image:
     name: Image
     if: inputs.image-run && inputs.image-id != ''
