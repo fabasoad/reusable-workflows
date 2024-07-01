@@ -44,7 +44,7 @@ jobs:
       - name: Prepare skip hooks
         env:
           INPUT_SKIP_HOOKS: "${{ inputs.skip-hooks }}"
-          DEFAULT_SKIP_HOOKS: "no-commit-to-branch"
+          DEFAULT_SKIP_HOOKS: "no-commit-to-branch, grype-dir"
         run: |
           skip_hooks="${DEFAULT_SKIP_HOOKS}"
           if [ -n "${INPUT_SKIP_HOOKS}" ]; then

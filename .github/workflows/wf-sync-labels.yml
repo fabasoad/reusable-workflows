@@ -2,12 +2,12 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      manifest-file-ref:
+      config-file:
         description: |
-          reusable-workflows repository branch name from where you want to use
-          labels.yml manifest file.
+          A path to the configuration file in the following format: <org>/<repo>/<path>@<ref>.
+          For example: fabasoad/reusable-workflows/.github/labels.yml@main
         required: false
-        default: "main"
+        default: "fabasoad/reusable-workflows/.github/labels.yml@main"
         type: string
 
 jobs:
@@ -17,12 +17,25 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
+      - name: Prepare metadata
+        id: metadata
+        env:
+          INPUT_CONFIG_FILE: "${{ inputs.config-file }}"
+        run: |
+          repo="$(echo "${INPUT_CONFIG_FILE}" | cut -d '/' -f -2)"
+          file_path="$(echo "${INPUT_CONFIG_FILE}" | cut -d '/' -f 3-)"
+          ref="$(echo "${file_path}" | cut -d '@' -f 2)"
+          file_path="$(echo "${file_path}" | cut -d '@' -f 1)"
+          echo "repo=${repo}" >> "$GITHUB_OUTPUT"
+          echo "file-path=${file_path}" >> "$GITHUB_OUTPUT"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+        shell: sh
       - name: Download manifest file
         run: |
           path="${GITHUB_WORKSPACE}/.github/labels.yml"
           curl -H "Authorization: token ${{ github.token }}" \
             -o "${path}" \
-            "https://raw.githubusercontent.com/fabasoad/reusable-workflows/${{ inputs.manifest-file-ref }}/.github/labels.yml"
+            "https://raw.githubusercontent.com/${{ steps.metadata.outputs.repo }}/${{ steps.metadata.outputs.ref }}/${{ steps.metadata.outputs.file-path }}"
       - name: Run Label Syncer
         uses: micnncim/action-label-syncer@v1
         with:
