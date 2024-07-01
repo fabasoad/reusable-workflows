@@ -2,7 +2,7 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      code-scanning-run:
+      code-scanning:
         description: Whether to run SAST analysis or not. Defaults to true.
         required: false
         default: true
@@ -14,14 +14,14 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "javascript"
         type: string
-      dependency-review-run:
+      dependency-review:
         description: |
           Whether to run Dependency review analysis or not. Defaults to true if
           it workflow is trigger by pull_request event, otherwise - false.
         required: false
         default: ${{ github.event_name == 'pull_request' }}
         type: boolean
-      image-run:
+      image:
         description: Whether to run Image analysis or not. Defaults to false.
         required: false
         default: false
@@ -31,7 +31,7 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: ""
         type: string
-      sca-run:
+      sca:
         description: Whether to run SCA analysis or not. Defaults to true.
         required: false
         default: true
@@ -50,7 +50,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
   code-scanning:
     name: Code Scanning
-    if: inputs.code-scanning-run
+    if: inputs.code-scanning
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -71,7 +71,7 @@ jobs:
           sarif_file: "${{ steps.code-scanning.outputs.sarif-output }}"
   sca:
     name: SCA
-    if: inputs.sca-run
+    if: inputs.sca
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -91,6 +91,7 @@ jobs:
           sarif_file: "${{ steps.sca.outputs.sarif }}"
   dependency-review:
     name: Dependency review
+    if: inputs.dependency-review
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -103,7 +104,7 @@ jobs:
           external-repo-token: "${{ github.token }}"
   image:
     name: Image
-    if: inputs.image-run && inputs.image-id != ''
+    if: inputs.image && inputs.image-id != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
