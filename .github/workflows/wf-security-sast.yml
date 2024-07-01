@@ -99,7 +99,7 @@ jobs:
       - name: Perform review
         uses: actions/dependency-review-action@v4
         with:
-          config-file: "fabasoad/reusable-workflows/.github/dependency-review-config.yml@main"
+          config-file: "fabasoad/reusable-workflows/.github/dependency-review-config.yml@fix/ci"
           external-repo-token: "${{ github.token }}"
   image:
     name: Image
