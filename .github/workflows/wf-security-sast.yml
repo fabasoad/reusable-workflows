@@ -14,6 +14,13 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "javascript"
         type: string
+      dependency-review-run:
+        description: |
+          Whether to run Dependency review analysis or not. Defaults to true if
+          it workflow is trigger by pull_request event, otherwise - false.
+        required: false
+        default: ${{ github.event_name == 'pull_request' }}
+        type: boolean
       image-run:
         description: Whether to run Image analysis or not. Defaults to false.
         required: false
