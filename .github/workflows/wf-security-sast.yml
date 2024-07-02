@@ -7,6 +7,21 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: true
         type: boolean
+      code-scanning-build-mode:
+        description: |
+          Available build modes will differ based on the language being analyzed.
+          One of: none, autobuild, manual.
+        required: false
+        default: "none"
+        type: string
+      code-scanning-build-command:
+        description: |
+          The build command to create the project that is required if the language
+          is a built language, such as Go or Java. It runs only in case "code-scanning-build-mode"
+          is set to "manual".
+        required: false
+        default: "make build"
+        type: string
       code-scanning-languages:
         description: |
           A comma-separated list of languages for SAST analysis. Defaults to
@@ -46,6 +61,11 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "default"
         type: string
+      versions-file:
+        description: Path to the file with tool versions, e.g. .tool-versions
+        required: false
+        default: ".tool-versions"
+        type: string
 
 jobs:
   code-scanning:
@@ -53,13 +73,57 @@ jobs:
     if: inputs.code-scanning
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      DEFAULT_JAVA_VERSION: "22"
+      DEFAULT_GRADLE_VERSION: "8.8"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
+      - name: Prepare metadata
+        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+        id: metadata
+        env:
+          INPUT_VERSIONS_FILE: "${{ inputs.versions-file }}"
+        run: |
+          gradle_version="${DEFAULT_GRADLE_VERSION}"
+          java_version="${DEFAULT_JAVA_VERSION}"
+          if [ "${INPUT_VERSIONS_FILE%*.tool-versions}" != "${INPUT_VERSIONS_FILE}" ]; then
+            gradle_version_temp="$(grep -Eo 'gradle [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d ' ' -f 2)"
+            if [ -n "${gradle_version}" ]; then
+              gradle_version="${gradle_version_temp}"
+            fi
+            java_version_temp="$(grep -Eo 'java [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d '-' -f 2)"
+            if [ -n "${java_version_temp}" ]; then
+              java_version="${java_version_temp}"
+            fi
+          fi
+          echo "gradle-version=${gradle_version}" >> "$GITHUB_OUTPUT"
+          echo "java-version=${java_version}" >> "$GITHUB_OUTPUT"
+      - name: Setup Java
+        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: "${{ steps.metadata.outputs.java-version }}"
+          distribution: "temurin"
+      - name: Setup gradle
+        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
       - name: Initialize
         uses: github/codeql-action/init@v3
         with:
           languages: "${{ inputs.code-scanning-languages }}"
+          build-mode: "${{ inputs.code-scanning-build-mode }}"
+      - name: Autobuild
+        if: ${{ inputs.code-scanning-build-mode == 'autobuild' }}
+        uses: github/codeql-action/autobuild@v3
+      - name: Manual build
+        if: ${{ inputs.code-scanning-build-mode == 'manual' }}
+        env:
+          # It is used in fabasoad/pojo project
+          SKIP_FINALIZE: true
+        run: "${{ inputs.code-scanning-build-command }}"
       - name: Perform analysis
         id: code-scanning
         uses: github/codeql-action/analyze@v3

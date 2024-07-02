@@ -1,0 +1,78 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      package-manager:
+        description: |
+          Used to specify a package manager for caching in the default directory.
+          Supported values: gradle. Defaults to "gradle".
+        required: false
+        default: "gradle"
+        type: string
+      build-command:
+        description: |
+          The build command to create the project that is required if the language
+          is a built language, such as Go or Java.
+        required: false
+        default: "make build"
+        type: string
+      test-command:
+        description: |
+          The test command to run unit tests. Defaults to "./gradlew test".
+        required: false
+        default: "make test"
+        type: string
+      versions-file:
+        description: Path to the file with tool versions, e.g. .tool-versions
+        required: false
+        default: ".tool-versions"
+        type: string
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  unit-tests-all:
+    name: All
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+      - name: Prepare metadata
+        id: metadata
+        env:
+          INPUT_VERSIONS_FILE: "${{ inputs.versions-file }}"
+        run: |
+          gradle_version="${DEFAULT_GRADLE_VERSION}"
+          java_version="${DEFAULT_JAVA_VERSION}"
+          if [ "${INPUT_VERSIONS_FILE%*.tool-versions}" != "${INPUT_VERSIONS_FILE}" ]; then
+            gradle_version_temp="$(grep -Eo 'gradle [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d ' ' -f 2)"
+            if [ -n "${gradle_version}" ]; then
+              gradle_version="${gradle_version_temp}"
+            fi
+            java_version_temp="$(grep -Eo 'java [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d '-' -f 2)"
+            if [ -n "${java_version_temp}" ]; then
+              java_version="${java_version_temp}"
+            fi
+          fi
+          echo "gradle-version=${gradle_version}" >> "$GITHUB_OUTPUT"
+          echo "java-version=${java_version}" >> "$GITHUB_OUTPUT"
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "${{ steps.metadata.outputs.java-version }}"
+          distribution: "temurin"
+      - name: Setup gradle
+        if: ${{ inputs.package-manager == 'gradle' }}
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
+      - name: Build
+        env:
+          # It is used in fabasoad/pojo project
+          SKIP_FINALIZE: true
+        run: "${{ inputs.build-command }}"
+      - name: Unit tests
+        run: "${{ inputs.test-command }}"
