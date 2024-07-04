@@ -208,7 +208,10 @@ jobs:
           echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
           ${{ steps.setup-grype.outputs.cmd }} \
             "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}.tar" \
-            --by-cve --fail-on="${INPUT_SEVERITY_THRESHOLD}" --output sarif --file "${sarif_path}"
+            --by-cve \
+            --fail-on="${INPUT_SEVERITY_THRESHOLD}" \
+            --output sarif \
+            --file "${sarif_path}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
