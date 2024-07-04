@@ -149,6 +149,7 @@ jobs:
         with:
           by-cve: "true"
           path: "${{ inputs.sca-path }}"
+          severity-cutoff: "low"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
@@ -187,11 +188,10 @@ jobs:
       - name: Perform analysis
         id: image
         run: |
-          ls -la "${{ steps.download-artifact.outputs.download-path }}"
           sarif_path="${RUNNER_TEMP}/$(date +%s).sarif"
           ${{ steps.setup-grype.outputs.cmd }} \
-            "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}" \
-            --by-cve --output sarif > "${sarif_path}"
+            "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}.tar" \
+            --by-cve --fail-on=low --output sarif > "${sarif_path}"
           echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
       - name: Upload to GHAS
         if: always()
