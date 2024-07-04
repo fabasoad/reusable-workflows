@@ -48,6 +48,13 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: ""
         type: string
+      image-severity-threshold:
+        description: |
+          Fail a pipeline if a vulnerability is found with a severity >= the
+          given severity. One of: negligible, low, medium, high, critical.
+        required: false
+        default: medium
+        type: string
       sca:
         description: Whether to run SCA analysis or not. Defaults to true.
         required: false
@@ -57,6 +64,13 @@ on: # yamllint disable-line rule:truthy
         description: Path to the directory for SCA. Defaults to "".
         required: false
         default: "."
+        type: string
+      sca-severity-threshold:
+        description: |
+          Fail a pipeline if a vulnerability is found with a severity >= the
+          given severity. One of: negligible, low, medium, high, critical.
+        required: false
+        default: medium
         type: string
       ghas-category:
         description: String used by GHAS for matching analyses. Defaults to "default".
@@ -149,7 +163,7 @@ jobs:
         with:
           by-cve: "true"
           path: "${{ inputs.sca-path }}"
-          severity-cutoff: "low"
+          severity-cutoff: "${{ inputs.sca-severity-threshold }}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
@@ -187,12 +201,14 @@ jobs:
         uses: anchore/scan-action/download-grype@v3
       - name: Perform analysis
         id: image
+        env:
+          INPUT_SEVERITY_THRESHOLD: "${{ inputs.image-severity-threshold }}"
         run: |
           sarif_path="${RUNNER_TEMP}/$(date +%s).sarif"
+          echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
           ${{ steps.setup-grype.outputs.cmd }} \
             "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}.tar" \
-            --by-cve --fail-on=low --output sarif > "${sarif_path}"
-          echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
+            --by-cve --fail-on="${INPUT_SEVERITY_THRESHOLD}" --output sarif --file "${sarif_path}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
