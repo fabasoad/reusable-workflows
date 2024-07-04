@@ -41,10 +41,19 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
-      image-id:
-        description: Image id, digest or full name to scan. Defaults to "".
+      image-artifact-name:
+        description: |
+          The artifact name that was uploaded by previous build job. In fact the
+          result of "docker image save" or "podman save" command. Defaults to "".
         required: false
         default: ""
+        type: string
+      image-severity-threshold:
+        description: |
+          Fail a pipeline if a vulnerability is found with a severity >= the
+          given severity. One of: negligible, low, medium, high, critical.
+        required: false
+        default: medium
         type: string
       sca:
         description: Whether to run SCA analysis or not. Defaults to true.
@@ -55,6 +64,13 @@ on: # yamllint disable-line rule:truthy
         description: Path to the directory for SCA. Defaults to "".
         required: false
         default: "."
+        type: string
+      sca-severity-threshold:
+        description: |
+          Fail a pipeline if a vulnerability is found with a severity >= the
+          given severity. One of: negligible, low, medium, high, critical.
+        required: false
+        default: medium
         type: string
       ghas-category:
         description: String used by GHAS for matching analyses. Defaults to "default".
@@ -147,6 +163,7 @@ jobs:
         with:
           by-cve: "true"
           path: "${{ inputs.sca-path }}"
+          severity-cutoff: "${{ inputs.sca-severity-threshold }}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
@@ -168,21 +185,36 @@ jobs:
           external-repo-token: "${{ github.token }}"
   image:
     name: Image
-    if: inputs.image && inputs.image-id != ''
+    if: inputs.image && inputs.image-artifact-name != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
+      - name: Download artifact
+        id: download-artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "${{ inputs.image-artifact-name }}"
+      - name: Setup Grype
+        id: setup-grype
+        uses: anchore/scan-action/download-grype@v3
       - name: Perform analysis
         id: image
-        uses: anchore/scan-action@v3
-        with:
-          by-cve: "true"
-          image: "${{ inputs.image-id }}"
+        env:
+          INPUT_SEVERITY_THRESHOLD: "${{ inputs.image-severity-threshold }}"
+        run: |
+          sarif_path="${RUNNER_TEMP}/$(date +%s).sarif"
+          echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
+          ${{ steps.setup-grype.outputs.cmd }} \
+            "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}.tar" \
+            --by-cve \
+            --fail-on="${INPUT_SEVERITY_THRESHOLD}" \
+            --output sarif \
+            --file "${sarif_path}"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           category: "image-${{ inputs.ghas-category }}"
-          sarif_file: "${{ steps.image.outputs.sarif }}"
+          sarif_file: "${{ steps.image.outputs.sarif-path }}"
