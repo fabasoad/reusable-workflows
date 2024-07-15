@@ -78,6 +78,9 @@ jobs:
     timeout-minutes: 30
     container:
       image: frapsoft/nikto:latest
+      options: -w /temp
+      volumes:
+        - ${{ github.workspace }}:/temp
     steps:
       - name: Perform scanning
         env:
@@ -86,8 +89,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nikto-report
-          path: report.htm
+          name: "nikto-report"
+          path: "${{ github.workspace }}/report.htm"
   ssllabs-scan:
     name: ssllabs-scan
     if: inputs.ssllabs-scan && inputs.target-url != '' && inputs.ssllabs-scan-email != ''
