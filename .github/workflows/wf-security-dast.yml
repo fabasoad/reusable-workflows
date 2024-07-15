@@ -15,7 +15,7 @@ on: # yamllint disable-line rule:truthy
       nikto:
         description: Whether to run Nikto or not. Defaults to true.
         required: false
-        default: true
+        default: false
         type: boolean
       ssllabs-scan:
         description: Whether to run ssllabs-scan or not. Defaults to true.
@@ -72,6 +72,7 @@ jobs:
           allow_issue_writing: "false"
           fail_action: "true"
   nikto:
+    # TODO: Cannot upload artifact
     name: Nikto
     if: inputs.nikto && inputs.target-url != ''
     runs-on: ubuntu-latest
@@ -95,6 +96,7 @@ jobs:
           name: "nikto-report"
           path: "/__w/reusable-workflows/reusable-workflows/report.htm"
   ssllabs-scan:
+    # TODO: Need to implement re-attempt
     name: ssllabs-scan
     if: inputs.ssllabs-scan && inputs.target-url != '' && inputs.ssllabs-scan-email != ''
     runs-on: ubuntu-latest
