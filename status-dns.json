@@ -1,0 +1,11 @@
+{
+  "host": "fabasoad.com",
+  "port": 443,
+  "protocol": "http",
+  "isPublic": false,
+  "status": "DNS",
+  "statusMessage": "Resolving domain names",
+  "startTime": 1721034263386,
+  "engineVersion": "2.3.0",
+  "criteriaVersion": "2009q"
+}

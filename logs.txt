@@ -1,0 +1,2 @@
+curl --location 'https://api.ssllabs.com/api/v4/register'  --header 'Content-Type: application/json' --data '{"firstName":"<>","lastName":"<>","email":"<>","organization":"<>"}'
+{"message":"User successfully registered","status":"success"}

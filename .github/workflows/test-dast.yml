@@ -1,0 +1,21 @@
+---
+name: Security DAST
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - feat/nikto
+
+jobs:
+  dast:
+    name: DAST
+    permissions:
+      contents: read
+      security-events: write
+    uses: fabasoad/reusable-workflows/.github/workflows/wf-security-dast.yml@feat/nikto
+    with:
+      nuclei: false
+      zap: false
+      ssllabs-scan: false
+      nikto: true
+      target-url: "https://fabasoad.com"

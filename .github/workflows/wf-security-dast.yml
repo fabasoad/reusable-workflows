@@ -2,11 +2,31 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      dast-run:
-        description: Whether to run DAST or not. Defaults to true.
+      nuclei:
+        description: Whether to run Nuclei or not. Defaults to true.
         required: false
         default: true
         type: boolean
+      zap:
+        description: Whether to run ZAP or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      nikto:
+        description: Whether to run Nikto or not. Defaults to true.
+        required: false
+        default: true
+        type: boolean
+      ssllabs-scan:
+        description: Whether to run ssllabs-scan or not. Defaults to true.
+        required: false
+        default: false
+        type: boolean
+      ssllabs-scan-email:
+        description: Email to pass to sslabs-scan job. Defaults to "".
+        required: false
+        default: ""
+        type: string
       target-url:
         description: Target URL to perform DAST analysis.
         required: false
@@ -21,8 +41,9 @@ on: # yamllint disable-line rule:truthy
 jobs:
   nuclei:
     name: Nuclei
-    if: inputs.dast-run && inputs.target-url != ''
+    if: inputs.nuclei && inputs.target-url != ''
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - name: Perform scanning
         uses: projectdiscovery/nuclei-action@v2.0.1
@@ -40,11 +61,65 @@ jobs:
           sarif_file: nuclei.sarif
   zap:
     name: ZAP
-    if: inputs.dast-run && inputs.target-url != ''
+    if: inputs.zap && inputs.target-url != ''
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Perform scanning
         uses: zaproxy/action-api-scan@v0.7.0
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"
+          fail_action: "true"
+  nikto:
+    name: Nikto
+    if: inputs.nikto && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: frapsoft/nikto:latest
+    steps:
+      - name: Perform scanning
+        env:
+          INPUT_TARGET_URL: "${{ inputs.target-url }}"
+        run: nikto.pl -host "${INPUT_TARGET_URL}" -output report.htm
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nikto-report
+          path: report.htm
+  ssllabs-scan:
+    name: ssllabs-scan
+    if: inputs.ssllabs-scan && inputs.target-url != '' && inputs.ssllabs-scan-email != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        id: scan
+        env:
+          INPUT_TARGET_URL: "${{ inputs.target-url }}"
+          INPUT_EMAIL: "${{ inputs.ssllabs-scan-email }}"
+        run: |
+          report_path="${RUNNER_TEMP}/report.json"
+          host=$(echo "${INPUT_TARGET_URL}" | cut -d '/' -f 3)
+          curl --location "https://api.ssllabs.com/api/v4/analyze?host=${host}&maxAge=1&all=on" \
+            --header "email: ${INPUT_EMAIL}" > report.json
+          err_msg="$(jq -r 'select(.errors != null) | .errors | map(.message) | join(". ")' "${report_path}")"
+          if [ -n "${err_msg}" ]; then
+            echo "::error title=Error response::${err_msg}"
+            exit 1
+          fi
+          status="$(jq -r '.status' "${report_path}")"
+          if [ "${status}" != "READY" ]; then
+            echo "::warning title=Report is not ready::Current status is \"${status}\""
+            exit 1
+          fi
+
+          echo "Host: ${host}"
+          jq -r '.endpoints[] | ("- IP Address: " + .ipAddress + ". Grade: " + .grade)' "${report_path}"
+
+          echo "report-path=${report_path}" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssllabs-scan-report
+          path: "${{ steps.scan.outputs.report-path }}"
