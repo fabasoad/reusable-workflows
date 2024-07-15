@@ -85,7 +85,10 @@ jobs:
       - name: Perform scanning
         env:
           INPUT_TARGET_URL: "${{ inputs.target-url }}"
-        run: nikto.pl -host "${INPUT_TARGET_URL}" -output report.htm
+        run: |
+          nikto.pl -host "${INPUT_TARGET_URL}" -output report.htm
+          pwd
+          ls -la
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
