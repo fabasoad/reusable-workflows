@@ -93,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "nikto-report"
-          path: "report.htm"
+          path: "/__w/reusable-workflows/reusable-workflows/report.htm"
   ssllabs-scan:
     name: ssllabs-scan
     if: inputs.ssllabs-scan && inputs.target-url != '' && inputs.ssllabs-scan-email != ''
