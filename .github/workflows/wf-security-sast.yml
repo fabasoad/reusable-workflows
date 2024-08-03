@@ -241,6 +241,7 @@ jobs:
         with:
           scan-type: "config"
           hide-progress: "false"
+          exit-code: "2"
           format: "sarif"
           output: "iac-${{ inputs.ghas-category }}.sarif"
           ignore-unfixed: "true"
