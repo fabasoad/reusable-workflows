@@ -77,13 +77,13 @@ jobs:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Unit tests
-        if: ${{ inputs.report-to-cc == 'false' }}
+        if: ${{ !inputs.report-to-cc }}
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
-        if: ${{ inputs.report-to-cc == 'true' }}
+        if: ${{ inputs.report-to-cc }}
         uses: paambaati/codeclimate-action@v8
         env:
           CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
