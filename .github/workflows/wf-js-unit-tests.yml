@@ -29,6 +29,11 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "${{ github.workspace }}/coverage/lcov.info:lcov"
         type: string
+      report-to-cc:
+        description: Either to report coverage results to Codeclimate or not.
+        required: false
+        default: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+        type: string
       node-version-file:
         description: |
           File containing the version Spec of the version to use. Examples:
@@ -72,13 +77,13 @@ jobs:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Unit tests
-        if: github.ref != 'refs/heads/main'
+        if: ${{ inputs.report-to-cc == 'false' }}
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: ${{ inputs.report-to-cc == 'true' }}
         uses: paambaati/codeclimate-action@v8
         env:
           CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
