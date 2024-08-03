@@ -47,7 +47,7 @@ jobs:
             cache_dependency_path="pnpm-lock.yaml"
           fi
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
-      - name: Setup node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version-file: "${{ inputs.node-version-file }}"
