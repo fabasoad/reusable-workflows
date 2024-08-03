@@ -246,6 +246,7 @@ jobs:
           output: "iac-${{ inputs.ghas-category }}.sarif"
           ignore-unfixed: "true"
           tf-vars: "${{ inputs.iac-tf-vars }}"
+          trivy-config: "trivy.yaml"
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@v3
