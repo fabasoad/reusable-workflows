@@ -20,6 +20,11 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "test"
         type: string
+      report-coverage:
+        description: Either to report coverage results to CodeClimate or not.
+        required: false
+        default: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        type: boolean
       node-version-file:
         description: |
           File containing the version Spec of the version to use. Examples:
@@ -63,17 +68,18 @@ jobs:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Unit tests
-        if: github.ref != 'refs/heads/main'
+        if: ${{ !inputs.report-coverage }}
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: paambaati/codeclimate-action@v8.0.0
+        if: ${{ inputs.report-coverage }}
+        uses: paambaati/codeclimate-action@v8
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.code-climate-test-reporter-id }}
+          CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         with:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
-          debug: true
+          coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
+          debug: "true"
