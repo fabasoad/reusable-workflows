@@ -20,7 +20,7 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "test"
         type: string
-      report-to-cc:
+      report-coverage:
         description: Either to report coverage results to CodeClimate or not.
         required: false
         default: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -68,13 +68,13 @@ jobs:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Unit tests
-        if: ${{ !inputs.report-to-cc }}
+        if: ${{ !inputs.report-coverage }}
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
-        if: ${{ inputs.report-to-cc }}
+        if: ${{ inputs.report-coverage }}
         uses: paambaati/codeclimate-action@v8
         env:
           CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
