@@ -14,7 +14,7 @@ repos:
     hooks:
       - id: gitleaks
   - repo: https://github.com/fabasoad/pre-commit-grype
-    rev: v0.3.1
+    rev: v0.6.0
     hooks:
       - id: grype-dir
         stages: ["push"]
@@ -49,6 +49,10 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
+      - id: check-executables-have-shebangs
+        stages: ["commit"]
+      - id: check-shebang-scripts-are-executable
+        stages: ["commit"]
       - id: check-merge-conflict
       - id: check-json
         stages: ["push"]
