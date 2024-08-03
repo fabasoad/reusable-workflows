@@ -30,10 +30,10 @@ on: # yamllint disable-line rule:truthy
         default: "${{ github.workspace }}/coverage/lcov.info:lcov"
         type: string
       report-to-cc:
-        description: Either to report coverage results to Codeclimate or not.
+        description: Either to report coverage results to CodeClimate or not.
         required: false
-        default: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
-        type: string
+        default: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        type: boolean
       node-version-file:
         description: |
           File containing the version Spec of the version to use. Examples:
