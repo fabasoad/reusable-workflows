@@ -78,9 +78,9 @@ on: # yamllint disable-line rule:truthy
         default: false
         type: boolean
       iac-tf-vars:
-        description: Path to TF vars file.
+        description: Path to TF vars file. Defaults to "terraform/vars.auto.tfvars".
         required: false
-        default: "terraform/variables.tf"
+        default: "terraform/vars.auto.tfvars"
         type: string
       ghas-category:
         description: String used by GHAS for matching analyses. Defaults to "default".
