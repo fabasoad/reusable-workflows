@@ -45,26 +45,13 @@ jobs:
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: |
-          cache_key="${RUNNER_OS}-${INPUT_PACKAGE_MANAGER}"
+          cache_dependency_path="package-lock.json"
           if [ "${INPUT_PACKAGE_MANAGER}" = "yarn" ]; then
             cache_dependency_path="yarn.lock"
-            cache_key="${cache_key}-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/.yarnrc.yml') }}"
           elif [ "${INPUT_PACKAGE_MANAGER}" = "pnpm" ]; then
             cache_dependency_path="pnpm-lock.yaml"
-            cache_key="${cache_key}-${{ hashFiles('**/pnpm-lock.yaml') }}"
-          else
-            cache_dependency_path="package-lock.json"
-            cache_key="${cache_key}-${{ hashFiles('**/package-lock.json') }}"
           fi
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
-          echo "cache-key=${cache_key}" >> "$GITHUB_OUTPUT"
-      - name: Cache ${{ inputs.package-manager }} dependencies
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: "node_modules"
-          key: "${{ steps.metadata.outputs.cache-key }}"
-          restore-keys: "${{ runner.os }}-${{ inputs.package-manager }}-"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -72,7 +59,6 @@ jobs:
           cache: "${{ inputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Compile
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
