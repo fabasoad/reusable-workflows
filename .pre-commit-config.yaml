@@ -4,6 +4,18 @@ default_stages: ["commit", "push"]
 exclude: ^\.gitleaks\.toml$
 minimum_pre_commit_version: 2.18.0
 repos:
+  # Linting
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier
+        entry: prettier --write --ignore-unknown
+        language: node
+        types: [text]
+        args: []
+        # https://github.com/prettier/prettier/releases
+        additional_dependencies: ["prettier@3.3.3"]
+        stages: ["commit"]
   # Security
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
@@ -14,7 +26,7 @@ repos:
     hooks:
       - id: gitleaks
   - repo: https://github.com/fabasoad/pre-commit-grype
-    rev: v0.6.0
+    rev: v0.6.1
     hooks:
       - id: grype-dir
         stages: ["push"]
@@ -40,12 +52,14 @@ repos:
       - id: actionlint
         args: ["-pyflakes="]
         stages: ["commit"]
-  # Other
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
+  # Shell
+  - repo: https://github.com/openstack/bashate
+    rev: 2.1.1
     hooks:
-      - id: prettier
+      - id: bashate
+        args: ["-i", "E003,E006"]
         stages: ["commit"]
+  # Other
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
