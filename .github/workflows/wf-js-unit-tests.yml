@@ -75,7 +75,7 @@ jobs:
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
         if: ${{ inputs.report-coverage }}
-        uses: paambaati/codeclimate-action@v8
+        uses: paambaati/codeclimate-action@v9
         env:
           CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
