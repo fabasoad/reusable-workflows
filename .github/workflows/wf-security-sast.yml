@@ -133,7 +133,7 @@ jobs:
           distribution: "temurin"
       - name: Setup gradle
         if: ${{ contains(inputs.code-scanning-languages, 'java') }}
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
       - name: Initialize
