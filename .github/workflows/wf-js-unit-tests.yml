@@ -1,10 +1,6 @@
 ---
 on: # yamllint disable-line rule:truthy
   workflow_call:
-    secrets:
-      code-climate-test-reporter-id:
-        description: Code Climate test reporter ID.
-        required: true
     inputs:
       package-manager:
         description: |
@@ -23,7 +19,7 @@ on: # yamllint disable-line rule:truthy
       report-coverage:
         description: Either to report coverage results to CodeClimate or not.
         required: false
-        default: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        default: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
         type: boolean
       node-version-file:
         description: |
@@ -77,7 +73,7 @@ jobs:
         if: ${{ inputs.report-coverage }}
         uses: paambaati/codeclimate-action@v9
         env:
-          CC_TEST_REPORTER_ID: "${{ secrets.code-climate-test-reporter-id }}"
+          CC_TEST_REPORTER_ID: "${{ secrets.CC_TEST_REPORTER_ID }}"
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         with:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}

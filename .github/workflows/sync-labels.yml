@@ -10,4 +10,4 @@ on: # yamllint disable-line rule:truthy
 jobs:
   maintenance:
     name: Maintenance
-    uses: fabasoad/reusable-workflows/.github/workflows/wf-sync-labels.yml@main
+    uses: ./.github/workflows/wf-sync-labels.yml
