@@ -37,6 +37,9 @@ jobs:
     name: All
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    env:
+      DEFAULT_JAVA_VERSION: "23"
+      DEFAULT_GRADLE_VERSION: "8.10.2"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4

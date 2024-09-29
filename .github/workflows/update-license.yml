@@ -8,4 +8,4 @@ on: # yamllint disable-line rule:truthy
 jobs:
   maintenance:
     name: Maintenance
-    uses: fabasoad/reusable-workflows/.github/workflows/wf-update-license.yml@main
+    uses: ./.github/workflows/wf-update-license.yml

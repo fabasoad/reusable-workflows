@@ -100,13 +100,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      DEFAULT_JAVA_VERSION: "22"
-      DEFAULT_GRADLE_VERSION: "8.8"
+      DEFAULT_JAVA_VERSION: "23"
+      DEFAULT_GRADLE_VERSION: "8.10.2"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
       - name: Prepare metadata
-        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+        if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
         id: metadata
         env:
           INPUT_VERSIONS_FILE: "${{ inputs.versions-file }}"
@@ -126,13 +126,13 @@ jobs:
           echo "gradle-version=${gradle_version}" >> "$GITHUB_OUTPUT"
           echo "java-version=${java_version}" >> "$GITHUB_OUTPUT"
       - name: Setup Java
-        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+        if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
         uses: actions/setup-java@v4
         with:
           java-version: "${{ steps.metadata.outputs.java-version }}"
           distribution: "temurin"
-      - name: Setup gradle
-        if: ${{ contains(inputs.code-scanning-languages, 'java') }}
+      - name: Setup Gradle
+        if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"

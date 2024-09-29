@@ -19,7 +19,7 @@ on: # yamllint disable-line rule:truthy
       report-coverage:
         description: Either to report coverage results to CodeClimate or not.
         required: false
-        default: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        default: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
         type: boolean
       node-version-file:
         description: |
