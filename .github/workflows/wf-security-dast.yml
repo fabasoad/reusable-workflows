@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning
-        uses: zaproxy/action-api-scan@v0.7.0
+        uses: zaproxy/action-api-scan@v0.8.0
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"

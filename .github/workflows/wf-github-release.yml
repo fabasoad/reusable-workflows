@@ -17,20 +17,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Get changelog
-        id: changelog
-        uses: simbo/changes-since-last-release-action@v1
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          name: ${{ github.ref_name }}
-          body: |
-            # Changelog
-
-            ${{ steps.changelog.outputs.log }}
-          draft: false
-          prerelease: false
+          title: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
       - name: Bump tags
         if: inputs.bump-tags
         uses: fischerscode/tagger@v0
