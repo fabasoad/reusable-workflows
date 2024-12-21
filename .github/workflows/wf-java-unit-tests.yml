@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEFAULT_JAVA_VERSION: "23"
-      DEFAULT_GRADLE_VERSION: "8.10.2"
+      DEFAULT_GRADLE_VERSION: "8.11.1"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
