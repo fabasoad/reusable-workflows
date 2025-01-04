@@ -5,7 +5,7 @@ on: # yamllint disable-line rule:truthy
       code-scanning:
         description: Whether to run SAST analysis or not. Defaults to true.
         required: false
-        default: true
+        default: false
         type: boolean
       code-scanning-build-mode:
         description: |
@@ -58,7 +58,7 @@ on: # yamllint disable-line rule:truthy
       sca:
         description: Whether to run SCA analysis or not. Defaults to true.
         required: false
-        default: true
+        default: false
         type: boolean
       sca-path:
         description: Path to the directory for SCA. Defaults to "".
