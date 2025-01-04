@@ -14,3 +14,6 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/wf-security-sast.yml
+    with:
+      code-scanning: true
+      sca: true
