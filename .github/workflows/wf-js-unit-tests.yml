@@ -82,7 +82,7 @@ jobs:
       - name: Validate if JSON report exists
         id: json-report
         run: |
-          json_report_file_path="${GITHUB_WORKSPACE}/coverage/coverage-final.json"
+          json_report_file_path="${GITHUB_WORKSPACE}/coverage/coverage-summary.json"
           if [ ! -f "${json_report_file_path}" ]; then
             json_report_file_path=""
           fi
