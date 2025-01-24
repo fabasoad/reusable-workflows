@@ -85,8 +85,8 @@ jobs:
         id: coverage-report
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          coverage-file: "${{ github.workspace }}/coverage/coverage-final.json"
-          base-coverage-file: "${{ github.workspace }}/coverage/coverage-final.json"
+          coverage-file: "${{ github.workspace }}/coverage/coverage-summary.json"
+          base-coverage-file: "${{ github.workspace }}/coverage/coverage-summary.json"
           skip-step: all
           output: report-markdown
       - name: Print report
