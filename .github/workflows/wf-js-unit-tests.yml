@@ -28,6 +28,19 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: ".tool-versions"
         type: string
+      testing-framework:
+        description: |
+          Testing framework. Possible values: jest.
+        required: false
+        default: "jest"
+        type: string
+      json-report-file:
+        description: |
+          File path of the JSON report. Relevant only if testing-framework is
+          "jest".
+        required: false
+        default: "jest-report.json"
+        type: string
 
 defaults:
   run:
@@ -79,3 +92,28 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
+      - name: Validate if JSON report exists
+        if: ${{ inputs.testing-framework == 'jest' }}
+        id: json-report-file
+        run: |
+          json_report_file_exists="false"
+          if [ -f "${{ inputs.json-report-file }}" ]; then
+            json_report_file_exists="true"
+          fi
+          echo "exists=${json_report_file_exists}" >> "$GITHUB_OUTPUT"
+      - name: Generate summary report
+        if: ${{ steps.json-report-file.outputs.exists == 'true' }}
+        id: generate-summary-report
+        uses: im-open/process-jest-test-results@v2
+        with:
+          create-pr-comment: "false"
+          create-status-check: "false"
+          github-token: "${{ github.token }}"
+          report-name: "Unit Tests Results"
+          results-file: "${{ inputs.json-report-file }}"
+          timezone: "Japan"
+      - name: Print summary report
+        if: ${{ steps.generate-summary-report.outputs.test-results-file-path != '' }}
+        run: |
+          report_file="${{ steps.generate-summary-report.outputs.test-results-file-path }}"
+          cat "${report_file}" >> "$GITHUB_STEP_SUMMARY"
