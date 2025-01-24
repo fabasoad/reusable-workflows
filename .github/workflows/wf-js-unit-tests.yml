@@ -82,6 +82,7 @@ jobs:
       - name: Report test coverage to GitHub Summary page
         uses: dorny/test-reporter@v1
         with:
-          name: Unit Tests
-          path: junit.xml
-          reporter: jest-junit
+          name: "Unit Tests"
+          path: "${{ github.workspace }}/junit.xml"
+          reporter: "jest-junit"
+          only-summary: "true"
