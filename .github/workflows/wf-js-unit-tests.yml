@@ -14,7 +14,7 @@ on: # yamllint disable-line rule:truthy
           Command that is specified in manifest file to run with package manager:
           <package-manager> run <test-command> (e.g. "yarn run test")
         required: false
-        default: "test:ci"
+        default: "test"
         type: string
       report-coverage:
         description: Either to report coverage results to CodeClimate or not.
