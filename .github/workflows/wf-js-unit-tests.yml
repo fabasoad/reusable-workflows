@@ -79,10 +79,3 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
-      - name: Report test coverage to GitHub Summary page
-        uses: dorny/test-reporter@v1
-        with:
-          name: "Unit Tests"
-          path: "${{ github.workspace }}/junit.xml"
-          reporter: "jest-junit"
-          only-summary: "true"
