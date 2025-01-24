@@ -153,12 +153,8 @@ jobs:
       - name: Perform analysis
         id: code-scanning
         uses: github/codeql-action/analyze@v3
-      - name: Upload to GHAS
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
         with:
           category: "code-scanning-${{ inputs.ghas-category }}"
-          sarif_file: "${{ steps.code-scanning.outputs.sarif-output }}"
   sca:
     name: SCA
     if: inputs.sca

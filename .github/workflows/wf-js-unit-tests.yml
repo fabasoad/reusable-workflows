@@ -79,3 +79,13 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
+      - name: Report test coverage to GitHub Summary page
+        id: coverage-report
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          coverage-file: ./coverage/coverage-final.json
+          base-coverage-file: ./coverage/coverage-final.json
+          skip-step: all
+          output: report-markdown
+      - name: Print report
+        run: cat "${{ steps.coverage-report.outputs.report }}"
