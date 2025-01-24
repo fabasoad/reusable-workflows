@@ -79,10 +79,25 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
-      - name: Report
+      - name: Validate if JSON report exists
+        id: json-report
+        run: |
+          json_report_file_path="${GITHUB_WORKSPACE}/coverage/coverage-final.json"
+          if [ ! -f "${json_report_file_path}" ]; then
+            json_report_file_path=""
+          fi
+          echo "file-path=${json_report_file_path}" >> "$GITHUB_OUTPUT"
+      - name: Generate summary report
+        if: ${{ steps.json-report.outputs.file-path != '' }}
+        id: generate-summary-report
         uses: im-open/process-jest-test-results@v2
         with:
           github-token: "${{ github.token }}"
-          results-file: "${{ github.workspace }}/coverage/coverage-final.json"
+          results-file: "${{ steps.json-report.outputs.file-path }}"
           create-pr-comment: "false"
           timezone: "Japan"
+      - name: Post summary report
+        if: ${{ steps.json-report.outputs.file-path != '' }}
+        run: |
+          report_file="${{ steps.generate-summary-report.outputs.test-results-file-path }}"
+          cat "${report_file}" >> "$GITHUB_STEP_SUMMARY"
