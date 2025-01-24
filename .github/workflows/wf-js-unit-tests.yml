@@ -79,15 +79,9 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
-      - name: Print dir
-        run: ls -la ${{ github.workspace }}/coverage
       - name: Report test coverage to GitHub Summary page
-        id: coverage-report
-        uses: ArtiomTr/jest-coverage-report-action@v2
+        uses: dorny/test-reporter@v1
         with:
-          coverage-file: "${{ github.workspace }}/coverage/coverage-summary.json"
-          base-coverage-file: "${{ github.workspace }}/coverage/coverage-summary.json"
-          skip-step: all
-          output: report-markdown
-      - name: Print report
-        run: cat "${{ steps.coverage-report.outputs.report }}"
+          name: Unit Tests
+          path: junit.xml
+          reporter: jest-junit
