@@ -79,3 +79,10 @@ jobs:
           coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
           coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
           debug: "true"
+      - name: Report
+        uses: im-open/process-jest-test-results@v2
+        with:
+          github-token: "${{ github.token }}"
+          results-file: "${{ github.workspace }}/coverage/coverage-final.json"
+          create-pr-comment: "false"
+          timezone: "Japan"
