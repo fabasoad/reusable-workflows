@@ -141,6 +141,9 @@ jobs:
         with:
           languages: "${{ inputs.code-scanning-languages }}"
           build-mode: "${{ inputs.code-scanning-build-mode }}"
+          config: |
+            paths-ignore:
+              - dist/index.js
       - name: Autobuild
         if: ${{ inputs.code-scanning-build-mode == 'autobuild' }}
         uses: github/codeql-action/autobuild@v3
