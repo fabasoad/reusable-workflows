@@ -10,14 +10,14 @@ on: # yamllint disable-line rule:truthy
         default: "yarn"
         type: string
       test-command:
-        description: |
-          Command that is specified in manifest file to run with package manager:
-          <package-manager> run <test-command> (e.g. "yarn run test")
+        description: Command to run unit tests.
         required: false
-        default: "test"
+        default: "make test"
         type: string
       report-coverage:
-        description: Either to report coverage results to CodeClimate or not.
+        description: |
+          Either to report coverage results to the connected 3rd party service
+          or not.
         required: false
         default: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
         type: boolean
