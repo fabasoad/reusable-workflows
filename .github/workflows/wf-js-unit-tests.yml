@@ -74,12 +74,11 @@ jobs:
           node-version-file: "${{ inputs.node-version-file }}"
           cache: "${{ inputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
-      - name: Compile
+      - name: Install dependencies
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
-      - name: Unit tests
-        if: ${{ !inputs.report-coverage }}
+      - name: Run tests
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
@@ -87,7 +86,7 @@ jobs:
           DEEPL_API_KEY: "${{ secrets.DEEPL_API_KEY }}"
           MYMEMORY_API_KEY: "${{ secrets.MYMEMORY_API_KEY }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
-      - name: Unit tests with coverage
+      - name: Report coverage
         if: ${{ inputs.report-coverage }}
         uses: codecov/codecov-action@v5
         with:
