@@ -91,11 +91,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-      #      - name: Upload test results to Codecov
-      #        if: ${{ !cancelled() && inputs.report-coverage }}
-      #        uses: codecov/test-results-action@v1
-      #        with:
-      #          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Validate if JSON report exists
         if: ${{ inputs.testing-framework == 'jest' }}
         id: json-report-file
