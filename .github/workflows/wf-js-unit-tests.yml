@@ -17,7 +17,9 @@ on: # yamllint disable-line rule:truthy
         default: "test"
         type: string
       report-coverage:
-        description: Either to report coverage results to CodeClimate or not.
+        description: |
+          Either to report coverage results to the connected 3rd party service
+          or not.
         required: false
         default: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
         type: boolean
@@ -72,26 +74,23 @@ jobs:
           node-version-file: "${{ inputs.node-version-file }}"
           cache: "${{ inputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
-      - name: Compile
+      - name: Install dependencies
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
-      - name: Unit tests
-        if: ${{ !inputs.report-coverage }}
+      - name: Run tests
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
+          # translation-action
+          DEEPL_API_KEY: "${{ secrets.DEEPL_API_KEY }}"
+          MYMEMORY_API_KEY: "${{ secrets.MYMEMORY_API_KEY }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
-      - name: Unit tests with coverage
+      - name: Report coverage
         if: ${{ inputs.report-coverage }}
-        uses: paambaati/codeclimate-action@v9
-        env:
-          CC_TEST_REPORTER_ID: "${{ secrets.CC_TEST_REPORTER_ID }}"
-          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        uses: codecov/codecov-action@v5
         with:
-          coverageCommand: ${{ inputs.package-manager }} run ${{ inputs.test-command }}
-          coverageLocations: "${{ github.workspace }}/coverage/lcov.info:lcov"
-          debug: "true"
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Validate if JSON report exists
         if: ${{ inputs.testing-framework == 'jest' }}
         id: json-report-file
