@@ -10,9 +10,11 @@ on: # yamllint disable-line rule:truthy
         default: "yarn"
         type: string
       test-command:
-        description: Command to run unit tests.
+        description: |
+          Command that is specified in manifest file to run with package manager:
+          <package-manager> run <test-command> (e.g. "yarn run test")
         required: false
-        default: "make test"
+        default: "test"
         type: string
       report-coverage:
         description: |
@@ -81,6 +83,9 @@ jobs:
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
+          # translation-action
+          DEEPL_API_KEY: "${{ secrets.DEEPL_API_KEY }}"
+          MYMEMORY_API_KEY: "${{ secrets.MYMEMORY_API_KEY }}"
         run: ${INPUT_PACKAGE_MANAGER} run ${INPUT_TEST_COMMAND}
       - name: Unit tests with coverage
         if: ${{ inputs.report-coverage }}
