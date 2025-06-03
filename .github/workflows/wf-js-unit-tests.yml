@@ -76,6 +76,7 @@ jobs:
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Install dependencies
         env:
+          YARN_CHECKSUM_BEHAVIOR: "update"
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Run tests
