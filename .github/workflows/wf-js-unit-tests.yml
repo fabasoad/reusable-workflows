@@ -56,24 +56,10 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
-      - name: Prepare metadata
-        id: metadata
-        env:
-          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
-        run: |
-          cache_dependency_path="package-lock.json"
-          if [ "${INPUT_PACKAGE_MANAGER}" = "yarn" ]; then
-            cache_dependency_path="yarn.lock"
-          elif [ "${INPUT_PACKAGE_MANAGER}" = "pnpm" ]; then
-            cache_dependency_path="pnpm-lock.yaml"
-          fi
-          echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version-file: "${{ inputs.node-version-file }}"
-          cache: "${{ inputs.package-manager }}"
-          cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Install dependencies
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
@@ -94,9 +80,11 @@ jobs:
       - name: Validate if JSON report exists
         if: ${{ inputs.testing-framework == 'jest' }}
         id: json-report-file
+        env:
+          INPUT_JSON_REPORT_FILE: "${{ inputs.json-report-file }}"
         run: |
           json_report_file_exists="false"
-          if [ -f "${{ inputs.json-report-file }}" ]; then
+          if [ -f "${INPUT_JSON_REPORT_FILE}" ]; then
             json_report_file_exists="true"
           fi
           echo "exists=${json_report_file_exists}" >> "$GITHUB_OUTPUT"
