@@ -56,14 +56,24 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
+      - name: Prepare metadata
+        id: metadata
+        env:
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: |
+          cache_dependency_path="package-lock.json"
+          if [ "${INPUT_PACKAGE_MANAGER}" = "yarn" ]; then
+            cache_dependency_path="yarn.lock"
+          elif [ "${INPUT_PACKAGE_MANAGER}" = "pnpm" ]; then
+            cache_dependency_path="pnpm-lock.yaml"
+          fi
+          echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version-file: "${{ inputs.node-version-file }}"
-      - name: Clean cache
-        env:
-          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
-        run: ${INPUT_PACKAGE_MANAGER} cache clean
+          cache: "${{ inputs.package-manager }}"
+          cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Install dependencies
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
