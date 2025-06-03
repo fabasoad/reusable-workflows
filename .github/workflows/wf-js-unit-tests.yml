@@ -76,6 +76,7 @@ jobs:
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Install dependencies
         env:
+          YARN_CHECKSUM_BEHAVIOR: "update"
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
         run: ${INPUT_PACKAGE_MANAGER} install
       - name: Run tests
@@ -94,9 +95,11 @@ jobs:
       - name: Validate if JSON report exists
         if: ${{ inputs.testing-framework == 'jest' }}
         id: json-report-file
+        env:
+          INPUT_JSON_REPORT_FILE: "${{ inputs.json-report-file }}"
         run: |
           json_report_file_exists="false"
-          if [ -f "${{ inputs.json-report-file }}" ]; then
+          if [ -f "${INPUT_JSON_REPORT_FILE}" ]; then
             json_report_file_exists="true"
           fi
           echo "exists=${json_report_file_exists}" >> "$GITHUB_OUTPUT"
