@@ -60,6 +60,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: "${{ inputs.node-version-file }}"
+      - name: Clean cache
+        env:
+          INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
+        run: ${INPUT_PACKAGE_MANAGER} cache clean
       - name: Install dependencies
         env:
           INPUT_PACKAGE_MANAGER: "${{ inputs.package-manager }}"
