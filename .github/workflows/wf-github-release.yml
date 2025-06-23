@@ -2,6 +2,16 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
+      ref:
+        description: ref (refs/heads/main)
+        default: ${{ github.ref }}
+        required: false
+        type: string
+      ref-name:
+        description: ref_name (main)
+        default: ${{ github.ref_name }}
+        required: false
+        type: string
       bump-tags:
         description: Whether to move semantic tags or not.
         default: true
@@ -17,13 +27,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: "${{ inputs.ref }}"
       - name: Create release
         uses: elgohr/Github-Release-Action@v5
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          title: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
+          title: ${{ inputs.ref-name }}
+          tag: ${{ inputs.ref-name }}
       - name: Bump tags
         if: inputs.bump-tags
         uses: fischerscode/tagger@v0
