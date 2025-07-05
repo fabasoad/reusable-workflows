@@ -34,19 +34,23 @@ jobs:
           if [ -f "package-lock.json" ]; then
             package_manager="npm"
             cache_dependency_path="package-lock.json"
+            cmd_install_dependencies="ci"
           elif [ -f "yarn.lock" ]; then
             package_manager="yarn"
             cache_dependency_path="yarn.lock"
+            cmd_install_dependencies="install"
             echo "YARN_CHECKSUM_BEHAVIOR=update" >> "$GITHUB_ENV"
           elif [ -f "pnpm-lock.yaml" ]; then
             package_manager="pnpm"
             cache_dependency_path="pnpm-lock.yaml"
+            cmd_install_dependencies="install --frozen-lockfile"
           else
             echo "No lock file found."
             exit 1
           fi
           echo "package-manager=${package_manager}" >> "$GITHUB_OUTPUT"
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
+          echo "cmd-install-dependencies=${cmd_install_dependencies}" >> "$GITHUB_OUTPUT"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -54,7 +58,7 @@ jobs:
           cache: "${{ steps.metadata.outputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
       - name: Install dependencies
-        run: ${{ steps.metadata.outputs.package-manager }} ci
+        run: ${{ steps.metadata.outputs.package-manager }} ${{ steps.metadata.outputs.cmd-install-dependencies }}
       - name: Perform linting
         env:
           INPUT_LINT_COMMAND: "${{ inputs.lint-command }}"
