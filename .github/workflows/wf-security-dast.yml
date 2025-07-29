@@ -26,11 +26,16 @@ jobs:
     steps:
       - name: Perform scanning
         id: nuclei-scan
-        uses: projectdiscovery/nuclei-action@v2.0.1
+        uses: projectdiscovery/nuclei-action@main
         with:
           target: "${{ inputs.target-url }}"
           flags: "-severity critical,high,medium,low -stats"
-      - name: Upload artifact
+      - name: Upload logs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-log
+          path: nuclei.log
+      - name: Upload SARIF as artifact
         if: steps.nuclei-scan.outputs.sarif_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
