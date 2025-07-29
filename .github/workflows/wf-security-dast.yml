@@ -66,3 +66,19 @@ jobs:
         uses: PortSwigger/dastardly-github-action@v1.0.0
         with:
           target-url: "${{ inputs.target-url }}"
+  pentest-tools:
+    name: Pentest Tools
+    if: inputs.dast-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        id: pentesttools-scan
+        uses: pentesttoolscom/pentesttools-github-action@v0.0.4-alpha
+        with:
+          target: "${{ inputs.target-url }}"
+          fail: "critical"
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report.ptt
+          path: "${{ steps.pentesttools-scan.outputs.result }}"

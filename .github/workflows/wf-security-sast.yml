@@ -2,6 +2,7 @@
 on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
+      # Code Scanning
       code-scanning:
         description: Whether to run SAST analysis or not. Defaults to true.
         required: false
@@ -29,6 +30,8 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "javascript"
         type: string
+
+      # PR review
       dependency-review:
         description: |
           Whether to run Dependency review analysis or not. Defaults to true if
@@ -36,6 +39,8 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: ${{ github.event_name == 'pull_request' }}
         type: boolean
+
+      # Container Image
       image:
         description: Whether to run Image analysis or not. Defaults to false.
         required: false
@@ -55,6 +60,8 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: medium
         type: string
+
+      # SCA
       sca:
         description: Whether to run SCA analysis or not. Defaults to true.
         required: false
@@ -72,6 +79,13 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: medium
         type: string
+      sca-vendor:
+        description: "Vendor to run SCA. Possible values: grype, osv-scanner."
+        required: false
+        default: osv-scanner
+        type: string
+
+      # IaC
       iac:
         description: Whether to run IaC analysis or not. Defaults to false.
         required: false
@@ -82,6 +96,8 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: "terraform/vars.auto.tfvars"
         type: string
+
+      # Common
       ghas-category:
         description: String used by GHAS for matching analyses. Defaults to "default".
         required: false
@@ -158,9 +174,9 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "code-scanning-${{ inputs.ghas-category }}"
-  sca:
-    name: SCA
-    if: inputs.sca
+  sca-grype:
+    name: SCA (Grype)
+    if: inputs.sca && inputs.sca-vendor == 'grype'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -179,6 +195,10 @@ jobs:
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.sca.outputs.sarif }}"
+  sca-osv-scanner:
+    name: SCA (OSV Scanner)
+    if: inputs.sca && inputs.sca-vendor == 'osv-scanner'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.1.0
   dependency-review:
     name: Dependency review
     if: inputs.dependency-review
