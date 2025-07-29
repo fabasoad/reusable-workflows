@@ -78,6 +78,7 @@ jobs:
           target: "${{ inputs.target-url }}"
           fail: "high"
       - name: Upload report as artifact
+        if: steps.pentesttools-scan.outputs.result != ''
         uses: actions/upload-artifact@v4
         with:
           name: report.ptt
