@@ -22,7 +22,7 @@ jobs:
   nuclei:
     name: Nuclei
     if: inputs.dast-run && inputs.target-url != ''
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Perform scanning
         id: nuclei-scan
@@ -57,3 +57,12 @@ jobs:
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"
+  dastardly:
+    name: Dastardly
+    if: inputs.dast-run && inputs.target-url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform scanning
+        uses: PortSwigger/dastardly-github-action@v1.0.0
+        with:
+          target-url: "${{ inputs.target-url }}"
