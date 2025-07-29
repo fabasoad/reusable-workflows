@@ -25,15 +25,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning
+        id: nuclei-scan
         uses: projectdiscovery/nuclei-action@v2.0.1
         with:
           target: "${{ inputs.target-url }}"
+          flags: "-severity critical,high,medium,low -stats"
       - name: Upload artifact
+        if: steps.nuclei-scan.outputs.sarif_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei-log
-          path: nuclei.log
+          name: nuclei.sarif
+          path: nuclei.sarif
       - name: Upload to GHAS
+        if: steps.nuclei-scan.outputs.sarif_exists == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           category: "nuclei-${{ inputs.ghas-category }}"
