@@ -76,7 +76,7 @@ jobs:
         uses: pentesttoolscom/pentesttools-github-action@v0.0.4-alpha
         with:
           target: "${{ inputs.target-url }}"
-          fail: "critical"
+          fail: "high"
       - name: Upload report as artifact
         uses: actions/upload-artifact@v4
         with:
