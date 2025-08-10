@@ -80,7 +80,7 @@ on: # yamllint disable-line rule:truthy
         default: medium
         type: string
       sca-vendor:
-        description: "Vendor to run SCA. Possible values: grype, osv-scanner."
+        description: "Vendor to run SCA. Possible values: grype."
         required: false
         default: grype
         type: string
@@ -195,10 +195,10 @@ jobs:
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.sca.outputs.sarif }}"
-  sca-osv-scanner:
-    name: SCA (OSV Scanner)
-    if: inputs.sca && inputs.sca-vendor == 'osv-scanner'
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.1.0
+  #  sca-osv-scanner:
+  #    name: SCA (OSV Scanner)
+  #    if: inputs.sca && inputs.sca-vendor == 'osv-scanner'
+  #    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.1.0
   dependency-review:
     name: Dependency review
     if: inputs.dependency-review
