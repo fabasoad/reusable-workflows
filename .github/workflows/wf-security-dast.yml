@@ -33,7 +33,7 @@ jobs:
       - name: Upload logs as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei-log
+          name: report-nuclei
           path: nuclei.log
       - name: Upload SARIF as artifact
         if: steps.nuclei-scan.outputs.sarif_exists == 'true'
@@ -57,6 +57,7 @@ jobs:
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"
+          artifact_name: report-zap
   dastardly:
     name: Dastardly
     if: inputs.dast-run && inputs.target-url != ''
@@ -66,6 +67,11 @@ jobs:
         uses: PortSwigger/dastardly-github-action@v1.0.0
         with:
           target-url: "${{ inputs.target-url }}"
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-dastardly
+          path: dastardly-report.xml
   pentest-tools:
     name: Pentest Tools
     if: inputs.dast-run && inputs.target-url != ''

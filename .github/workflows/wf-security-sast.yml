@@ -82,7 +82,7 @@ on: # yamllint disable-line rule:truthy
       sca-vendor:
         description: "Vendor to run SCA. Possible values: grype, osv-scanner."
         required: false
-        default: osv-scanner
+        default: grype
         type: string
 
       # IaC
