@@ -120,7 +120,7 @@ jobs:
       DEFAULT_GRADLE_VERSION: "9.0.0"
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Prepare metadata
         if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
         id: metadata
@@ -181,7 +181,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Perform analysis
         id: sca
         uses: anchore/scan-action@v6
@@ -206,7 +206,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Perform review
         uses: actions/dependency-review-action@v4
         with:
@@ -252,7 +252,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Perform analysis
         uses: aquasecurity/trivy-action@0.32.0
         with:

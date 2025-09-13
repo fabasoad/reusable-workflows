@@ -52,7 +52,7 @@ jobs:
           fi
           echo "SKIP=${skip_hooks}" >> "$GITHUB_ENV"
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Update git config
