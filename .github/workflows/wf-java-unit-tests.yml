@@ -72,6 +72,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
+          add-job-summary: "never"
+          artifact-retention-days: "3"
       - name: Build
         env:
           # It is used in fabasoad/pojo project
