@@ -149,9 +149,11 @@ jobs:
           distribution: "temurin"
       - name: Setup Gradle
         if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
+          add-job-summary: "never"
+          artifact-retention-days: "3"
       - name: Initialize
         uses: github/codeql-action/init@v4
         with:
