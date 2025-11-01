@@ -69,7 +69,7 @@ jobs:
           distribution: "temurin"
       - name: Setup gradle
         if: ${{ inputs.package-manager == 'gradle' }}
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
       - name: Build
