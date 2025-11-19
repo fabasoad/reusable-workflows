@@ -23,5 +23,5 @@ jobs:
       security-events: write
     uses: ./.github/workflows/wf-security-sast.yml
     with:
-      code-scanning: ${{ (github.event.inputs.security-type || 'all') == 'all' || github.event.inputs.security-type == 'code-scanning' }}
-      sca: ${{ (github.event.inputs.security-type || 'all') == 'all' || github.event.inputs.security-type == 'sca' }}
+      code-scanning: ${{ contains(fromJSON('["all", "code-scanning"]'), github.event.inputs.security-type || 'all') }}
+      sca: ${{ contains(fromJSON('["all", "sca"]'), github.event.inputs.security-type || 'all') }}
