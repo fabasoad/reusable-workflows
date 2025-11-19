@@ -26,9 +26,9 @@ on: # yamllint disable-line rule:truthy
       code-scanning-languages:
         description: |
           A comma-separated list of languages for SAST analysis. Defaults to
-          "javascript".
+          "actions".
         required: false
-        default: "javascript"
+        default: "actions"
         type: string
 
       # PR review
