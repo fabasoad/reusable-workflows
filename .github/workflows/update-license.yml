@@ -10,3 +10,6 @@ jobs:
   maintenance:
     name: Maintenance
     uses: ./.github/workflows/wf-update-license.yml
+    permissions:
+      contents: write
+      pull-requests: write

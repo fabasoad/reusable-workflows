@@ -11,3 +11,5 @@ jobs:
   pre-commit:
     name: Pre-commit
     uses: ./.github/workflows/wf-pre-commit.yml
+    permissions:
+      contents: read

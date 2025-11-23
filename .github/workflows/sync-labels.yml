@@ -11,3 +11,7 @@ jobs:
   maintenance:
     name: Maintenance
     uses: ./.github/workflows/wf-sync-labels.yml
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write

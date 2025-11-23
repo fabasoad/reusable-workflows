@@ -63,12 +63,12 @@ jobs:
           INPUT_PRE_COMMIT_CONFIG_PATH: ${{ inputs.pre-commit-config-path }}
           INPUT_TARGET_BRANCH: ${{ inputs.target-branch }}
         run: |
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage commit
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage push
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage pre-commit
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --from-ref "origin/${INPUT_TARGET_BRANCH}" --to-ref "${GITHUB_SHA}" --show-diff-on-failure --hook-stage pre-push
       - name: Run pre-commit on all files
         if: ${{ inputs.run-on-all-files }}
         env:
           INPUT_PRE_COMMIT_CONFIG_PATH: ${{ inputs.pre-commit-config-path }}
         run: |
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage commit
-          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage push
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage pre-commit
+          pre-commit run --config "${INPUT_PRE_COMMIT_CONFIG_PATH}" --all-files --show-diff-on-failure --hook-stage pre-push
