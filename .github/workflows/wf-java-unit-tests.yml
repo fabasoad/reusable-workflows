@@ -38,8 +38,8 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      DEFAULT_JAVA_VERSION: "24"
-      DEFAULT_GRADLE_VERSION: "8.14.3"
+      DEFAULT_JAVA_VERSION: "25"
+      DEFAULT_GRADLE_VERSION: "9.2.1"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v6
@@ -65,8 +65,8 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          java-version: "${{ steps.metadata.outputs.java-version }}"
           distribution: "temurin"
+          java-version: "${{ steps.metadata.outputs.java-version }}"
       - name: Setup gradle
         if: ${{ inputs.package-manager == 'gradle' }}
         uses: gradle/actions/setup-gradle@v5
