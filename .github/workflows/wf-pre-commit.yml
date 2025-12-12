@@ -58,8 +58,18 @@ jobs:
           echo "path=${file_path}" >> "$GITHUB_OUTPUT"
 
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
         env:
+          INPUT_TARGET_BRANCH: "${{ inputs.target-branch }}"
+          PRE_COMMIT_CONFIG_FILE_PATH: ${{ steps.pre-commit-config.outputs.path }}
           SKIP: "${{ steps.prepare-skip-hooks.outputs.list }}"
-        with:
-          extra_args: --config ${{ steps.pre-commit-config.outputs.path }} ${{ github.event_name == 'pull_request' && format('--from-ref origin/{0} --to-ref {1}', inputs.target-branch, github.sha) || '--all-files' }}
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            args="--from-ref origin/${INPUT_TARGET_BRANCH} --to-ref ${GITHUB_SHA}"
+          else
+            args="--all-files"
+          fi
+          pre-commit run \
+            --show-diff-on-failure \
+            --color=always \
+            --config ${PRE_COMMIT_CONFIG_FILE_PATH} \
+            ${args}
