@@ -48,6 +48,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Update git config
+        run: git config --global --add safe.directory "$(pwd)"
+
       - name: Prepare pre-commit config
         id: pre-commit-config
         env:
