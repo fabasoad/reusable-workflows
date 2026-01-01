@@ -31,13 +31,13 @@ jobs:
           target: "${{ inputs.target-url }}"
           flags: "-severity critical,high,medium,low -stats"
       - name: Upload logs as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: report-nuclei
           path: nuclei.log
       - name: Upload SARIF as artifact
         if: steps.nuclei-scan.outputs.sarif_exists == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: nuclei.sarif
           path: nuclei.sarif
@@ -68,7 +68,7 @@ jobs:
         with:
           target-url: "${{ inputs.target-url }}"
       - name: Upload report as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: report-dastardly
           path: dastardly-report.xml
@@ -85,7 +85,7 @@ jobs:
           fail: "high"
       - name: Upload report as artifact
         if: steps.pentesttools-scan.outputs.result != ''
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: report.ptt
           path: "${{ steps.pentesttools-scan.outputs.result }}"
