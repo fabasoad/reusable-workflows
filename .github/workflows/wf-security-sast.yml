@@ -117,7 +117,7 @@ jobs:
     timeout-minutes: 5
     env:
       DEFAULT_JAVA_VERSION: "25"
-      DEFAULT_GRADLE_VERSION: "9.2.1"
+      DEFAULT_GRADLE_VERSION: "9.3.1"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v6
@@ -256,7 +256,7 @@ jobs:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v6
       - name: Perform analysis
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.1
         with:
           scan-type: "config"
           hide-progress: "false"
