@@ -69,7 +69,7 @@ jobs:
           java-version: "${{ steps.metadata.outputs.java-version }}"
       - name: Setup gradle
         if: ${{ inputs.package-manager == 'gradle' }}
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "${{ steps.metadata.outputs.gradle-version }}"
           add-job-summary: "never"
