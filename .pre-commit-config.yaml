@@ -13,7 +13,7 @@ repos:
         types: [text]
         args: []
         # https://github.com/prettier/prettier/releases
-        additional_dependencies: ["prettier@3.8.1"]
+        additional_dependencies: ["prettier@3.8.2"]
         stages: ["pre-commit"]
   # Security
   - repo: https://github.com/Yelp/detect-secrets
@@ -53,7 +53,7 @@ repos:
         stages: ["pre-push"]
   # GitHub Actions
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.11
+    rev: v1.7.12
     hooks:
       - id: actionlint
         args: ["-pyflakes=", "-shellcheck="]

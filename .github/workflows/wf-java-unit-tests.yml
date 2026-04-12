@@ -38,8 +38,8 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      DEFAULT_JAVA_VERSION: "25"
-      DEFAULT_GRADLE_VERSION: "9.3.1"
+      DEFAULT_JAVA_VERSION: "26"
+      DEFAULT_GRADLE_VERSION: "9.4.1"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v6
@@ -52,7 +52,7 @@ jobs:
           java_version="${DEFAULT_JAVA_VERSION}"
           if [ "${INPUT_VERSIONS_FILE%*.tool-versions}" != "${INPUT_VERSIONS_FILE}" ]; then
             gradle_version_temp="$(grep -Eo 'gradle [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d ' ' -f 2)"
-            if [ -n "${gradle_version}" ]; then
+            if [ -n "${gradle_version_temp}" ]; then
               gradle_version="${gradle_version_temp}"
             fi
             java_version_temp="$(grep -Eo 'java [a-z0-9.-]+' "${INPUT_VERSIONS_FILE}" | cut -d '-' -f 2)"
