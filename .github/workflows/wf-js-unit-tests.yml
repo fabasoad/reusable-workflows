@@ -89,7 +89,7 @@ jobs:
         run: ${{ steps.metadata.outputs.package-manager }} run ${INPUT_TEST_COMMAND}
       - name: Report coverage
         if: ${{ inputs.report-coverage }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Validate if JSON report exists
