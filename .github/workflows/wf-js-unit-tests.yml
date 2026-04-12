@@ -106,7 +106,7 @@ jobs:
       - name: Generate summary report
         if: ${{ steps.json-report-file.outputs.exists == 'true' }}
         id: generate-summary-report
-        uses: im-open/process-jest-test-results@v2
+        uses: im-open/process-jest-test-results@v3
         with:
           create-pr-comment: "false"
           create-status-check: "false"
