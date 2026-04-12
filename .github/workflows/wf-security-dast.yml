@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Perform scanning
         id: nuclei-scan
-        uses: projectdiscovery/nuclei-action@main
+        uses: projectdiscovery/nuclei-action@v3
         with:
           target: "${{ inputs.target-url }}"
           flags: "-severity critical,high,medium,low -stats"
@@ -79,7 +79,7 @@ jobs:
     steps:
       - name: Perform scanning
         id: pentesttools-scan
-        uses: pentesttoolscom/pentesttools-github-action@v0.0.4-alpha
+        uses: pentesttoolscom/pentesttools-github-action@master
         with:
           target: "${{ inputs.target-url }}"
           fail: "high"
