@@ -234,7 +234,7 @@ jobs:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v6
       - name: Perform review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           config-file: "fabasoad/reusable-workflows/.github/dependency-review-config.yml@main"
           external-repo-token: "${{ github.token }}"
