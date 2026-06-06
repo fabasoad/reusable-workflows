@@ -39,11 +39,13 @@ jobs:
             validate: true
           token: ${{ secrets.github-token || github.token }}
       - name: Upload SARIF as artifact
+        if: always() && hashFiles('nuclei.sarif') != ''
         uses: actions/upload-artifact@v7
         with:
           name: nuclei.sarif
           path: nuclei.sarif
       - name: Upload to GHAS
+        if: always() && hashFiles('nuclei.sarif') != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
           category: "nuclei-${{ inputs.ghas-category }}"
