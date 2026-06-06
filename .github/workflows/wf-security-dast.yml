@@ -1,6 +1,10 @@
 ---
 on: # yamllint disable-line rule:truthy
   workflow_call:
+    secrets:
+      github-token:
+        description: GitHub token for authenticated requests
+        required: false
     inputs:
       dast-run:
         description: Whether to run DAST or not. Defaults to true.
@@ -33,6 +37,7 @@ jobs:
             stats: true
             sarif-export: nuclei.sarif
             validate: true
+          token: ${{ secrets.github-token || github.token }}
       - name: Upload SARIF as artifact
         uses: actions/upload-artifact@v7
         with:
