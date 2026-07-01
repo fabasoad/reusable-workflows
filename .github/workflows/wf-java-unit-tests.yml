@@ -42,7 +42,7 @@ jobs:
       DEFAULT_GRADLE_VERSION: "9.4.1"
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Prepare metadata
         id: metadata
         env:
