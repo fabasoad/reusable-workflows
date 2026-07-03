@@ -45,7 +45,7 @@ jobs:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
       - name: Update LICENSE file
-        uses: FantasticFiasco/action-update-license-year@v3
+        uses: FantasticFiasco/action-update-license-year@f180e962fa988db222d8f03ef4636750312d1b3d # v3.0.4
         with:
           token: "${{ github.token }}"
           assignees: "${{ inputs.assignees }}"
