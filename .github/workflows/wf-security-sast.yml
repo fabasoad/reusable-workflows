@@ -121,7 +121,7 @@ jobs:
       DEFAULT_NODE_VERSION: "25"
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       # Start: TypeScript
       - name: Prepare TypeScript metadata
         if: contains(format(',{0},', inputs.code-scanning-languages), ',typescript,')
@@ -207,7 +207,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Perform analysis
         id: sca
         uses: anchore/scan-action@v7
@@ -232,7 +232,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Perform review
         uses: actions/dependency-review-action@v5
         with:
@@ -278,7 +278,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Perform analysis
         uses: aquasecurity/trivy-action@v0.36.0
         with:
