@@ -29,7 +29,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Perform scanning
-        uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c # v3.1.0
+        uses: projectdiscovery/nuclei-action@cc153d0541e1adf8a42bbe31c0a4fb2376147538 # v3.1.1
         with:
           config: |
             target: ["${{ inputs.target-url }}"]
@@ -46,7 +46,7 @@ jobs:
           path: nuclei.sarif
       - name: Upload to GHAS
         if: always() && hashFiles('nuclei.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.36.2
         with:
           category: "nuclei-${{ inputs.ghas-category }}"
           sarif_file: nuclei.sarif
