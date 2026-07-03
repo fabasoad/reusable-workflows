@@ -29,7 +29,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Perform scanning
-        uses: projectdiscovery/nuclei-action@v3
+        uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c # v3.1.0
         with:
           config: |
             target: ["${{ inputs.target-url }}"]
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning
-        uses: zaproxy/action-api-scan@v0.10.0
+        uses: zaproxy/action-api-scan@5158fe4d9d8fcc75ea204db81317cce7f9e5453d # v0.10.0
         with:
           target: "${{ inputs.target-url }}"
           allow_issue_writing: "false"
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Perform scanning
-        uses: PortSwigger/dastardly-github-action@v1.0.0
+        uses: PortSwigger/dastardly-github-action@f72f38f8b4ac8ed59c69854cc77eb9d53e50e78b # v1.0.0
         with:
           target-url: "${{ inputs.target-url }}"
       - name: Upload report as artifact
@@ -82,7 +82,7 @@ jobs:
     steps:
       - name: Perform scanning
         id: pentesttools-scan
-        uses: pentesttoolscom/pentesttools-github-action@master
+        uses: pentesttoolscom/pentesttools-github-action@ece54ee3353e11194715688b9af3b708801fa3f6
         with:
           target: "${{ inputs.target-url }}"
           fail: "high"

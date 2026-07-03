@@ -37,6 +37,6 @@ jobs:
             -o "${path}" \
             "https://raw.githubusercontent.com/${{ steps.metadata.outputs.repo }}/${{ steps.metadata.outputs.ref }}/${{ steps.metadata.outputs.file-path }}"
       - name: Run Label Syncer
-        uses: micnncim/action-label-syncer@v1
+        uses: micnncim/action-label-syncer@3abd5ab72fda571e69fffd97bd4e0033dd5f495c # v1.3.0
         with:
           token: "${{ github.token }}"

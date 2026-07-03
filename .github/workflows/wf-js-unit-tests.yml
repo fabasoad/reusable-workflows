@@ -89,7 +89,7 @@ jobs:
         run: ${{ steps.metadata.outputs.package-manager }} run ${INPUT_TEST_COMMAND}
       - name: Report coverage
         if: ${{ inputs.report-coverage }}
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Validate if JSON report exists
@@ -106,7 +106,7 @@ jobs:
       - name: Generate summary report
         if: ${{ steps.json-report-file.outputs.exists == 'true' }}
         id: generate-summary-report
-        uses: im-open/process-jest-test-results@v3
+        uses: im-open/process-jest-test-results@f640593f1042fa6766345c754ef4076270b0ee5e # v4.0.0
         with:
           create-pr-comment: "false"
           create-status-check: "false"
