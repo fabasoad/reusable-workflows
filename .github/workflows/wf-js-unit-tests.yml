@@ -49,6 +49,9 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
+
       - name: Prepare metadata
         id: metadata
         run: | # pragma: allowlist secret
@@ -72,14 +75,25 @@ jobs:
           echo "package-manager=${package_manager}" >> "$GITHUB_OUTPUT"
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
           echo "cmd-install-dependencies=${cmd_install_dependencies}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        if: steps.metadata.outputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          # Intentional: actions/setup-node provides dependency caching; disable
+          # pnpm/action-setup cache to avoid duplicate/unstable cache behavior
+          cache: "false"
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "${{ inputs.node-version-file }}"
           cache: "${{ steps.metadata.outputs.package-manager }}"
           cache-dependency-path: "${{ steps.metadata.outputs.cache-dependency-path }}"
+
       - name: Install dependencies
         run: ${{ steps.metadata.outputs.package-manager }} ${{ steps.metadata.outputs.cmd-install-dependencies }}
+
       - name: Run tests
         env:
           INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
@@ -87,11 +101,13 @@ jobs:
           DEEPL_API_KEY: "${{ secrets.DEEPL_API_KEY }}"
           MYMEMORY_API_KEY: "${{ secrets.MYMEMORY_API_KEY }}"
         run: ${{ steps.metadata.outputs.package-manager }} run ${INPUT_TEST_COMMAND}
+
       - name: Report coverage
         if: ${{ inputs.report-coverage }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Validate if JSON report exists
         if: ${{ inputs.testing-framework == 'jest' }}
         id: json-report-file
@@ -103,6 +119,7 @@ jobs:
             json_report_file_exists="true"
           fi
           echo "exists=${json_report_file_exists}" >> "$GITHUB_OUTPUT"
+
       - name: Generate summary report
         if: ${{ steps.json-report-file.outputs.exists == 'true' }}
         id: generate-summary-report
@@ -114,6 +131,7 @@ jobs:
           report-name: "Unit Tests Results"
           results-file: "${{ inputs.json-report-file }}"
           timezone: "Japan"
+
       - name: Print summary report
         if: ${{ steps.generate-summary-report.outputs.test-results-file-path != '' }}
         run: |
