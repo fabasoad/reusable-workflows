@@ -43,6 +43,9 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
+
       - name: Prepare metadata
         id: metadata
         env:

@@ -122,6 +122,8 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
       # Start: TypeScript
       - name: Prepare TypeScript metadata
         if: contains(format(',{0},', inputs.code-scanning-languages), ',typescript,')
@@ -208,6 +210,8 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
       - name: Perform analysis
         id: sca
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
@@ -233,6 +237,8 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
       - name: Perform review
         uses: actions/dependency-review-action@v5
         with:
@@ -279,6 +285,8 @@ jobs:
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
       - name: Perform analysis
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
