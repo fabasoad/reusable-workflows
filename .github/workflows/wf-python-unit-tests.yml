@@ -35,10 +35,48 @@ jobs:
         with:
           persist-credentials: "false"
 
+      - name: Prepare metadata
+        id: metadata
+        run: | # pragma: allowlist secret
+          if [ -f "uv.lock" ]; then
+            package_manager="uv"
+            cache_dependency_path="uv.lock"
+          elif [ -f "poetry.lock" ]; then
+            package_manager="poetry"
+            cache_dependency_path="poetry.lock"
+          elif [ -f "Pipfile.lock" ]; then
+            package_manager="pipenv"
+            cache_dependency_path="Pipfile.lock"
+          else
+            echo "No lock file found."
+            exit 1
+          fi
+          echo "package-manager=${package_manager}" >> "$GITHUB_OUTPUT"
+          echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup uv
+        if: steps.metadata.outputs.package-manager == 'uv'
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          enable-cache: "true"
+          version-file: "${{ inputs.python-version-file }}"
+
+      - name: Setup Poetry
+        if: steps.metadata.outputs.package-manager == 'poetry'
+        uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version-file: "${{ inputs.python-version-file }}"
+          cache: "${{ case(steps.metadata.outputs.package-manager == 'uv', '', steps.metadata.outputs.package-manager) }}"
+          cache-dependency-path: "${{ case(steps.metadata.outputs.package-manager == 'uv', '', steps.metadata.outputs.cache-dependency-path) }}"
+
+      - name: Setup pipenv
+        if: steps.metadata.outputs.package-manager == 'pipenv'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipenv
 
       - name: Install dependencies
         env:

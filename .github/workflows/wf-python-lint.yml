@@ -54,7 +54,7 @@ jobs:
           echo "package-manager=${package_manager}" >> "$GITHUB_OUTPUT"
           echo "cache-dependency-path=${cache_dependency_path}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up uv
+      - name: Setup uv
         if: steps.metadata.outputs.package-manager == 'uv'
         uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
