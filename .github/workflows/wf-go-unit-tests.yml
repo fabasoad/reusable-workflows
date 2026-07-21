@@ -1,0 +1,53 @@
+---
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      install-command:
+        description: Command that installs dependencies
+        required: false
+        default: "make install"
+        type: string
+      test-command:
+        description: Command that runs tests
+        required: false
+        default: "make test"
+        type: string
+      go-version-file:
+        description: |
+          File containing the version Spec of the version to use. Examples:
+          go.mod, go.work, .go-version, .tool-versions.
+        required: false
+        default: "go.mod"
+        type: string
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  unit-tests-all:
+    name: All
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: "false"
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: "${{ inputs.go-version-file }}"
+          cache: "true"
+          cache-dependency-path: "go.sum"
+
+      - name: Install dependencies
+        env:
+          INPUT_INSTALL_COMMAND: "${{ inputs.install-command }}"
+        run: ${INPUT_INSTALL_COMMAND}
+
+      - name: Run tests
+        env:
+          INPUT_TEST_COMMAND: "${{ inputs.test-command }}"
+        run: ${INPUT_TEST_COMMAND}
