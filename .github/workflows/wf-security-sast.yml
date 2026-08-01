@@ -181,7 +181,7 @@ jobs:
           artifact-retention-days: "3"
       # End: Java
       - name: Initialize
-        uses: github/codeql-action/init@v4.36.2
+        uses: github/codeql-action/init@v4.37.3
         with:
           languages: "${{ inputs.code-scanning-languages }}"
           build-mode: "${{ inputs.code-scanning-build-mode }}"
@@ -190,7 +190,7 @@ jobs:
               - dist/index.js
       - name: Autobuild
         if: ${{ inputs.code-scanning-build-mode == 'autobuild' }}
-        uses: github/codeql-action/autobuild@v4.36.2
+        uses: github/codeql-action/autobuild@v4.37.3
       - name: Manual build
         if: ${{ inputs.code-scanning-build-mode == 'manual' }}
         env:
@@ -199,7 +199,7 @@ jobs:
         run: "${{ inputs.code-scanning-build-command }}"
       - name: Perform analysis
         id: code-scanning
-        uses: github/codeql-action/analyze@v4.36.2
+        uses: github/codeql-action/analyze@v4.37.3
         with:
           category: "code-scanning-${{ inputs.ghas-category }}"
   sca-grype:
@@ -221,7 +221,7 @@ jobs:
           severity-cutoff: "${{ inputs.sca-severity-threshold }}"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@v4.36.2
+        uses: github/codeql-action/upload-sarif@v4.37.3
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.sca.outputs.sarif }}"
@@ -273,7 +273,7 @@ jobs:
             --file "${sarif_path}"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@v4.36.2
+        uses: github/codeql-action/upload-sarif@v4.37.3
         with:
           category: "image-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.image.outputs.sarif-path }}"
@@ -300,7 +300,7 @@ jobs:
           trivy-config: "trivy.yaml"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@v4.36.2
+        uses: github/codeql-action/upload-sarif@v4.37.3
         with:
           category: "iac-${{ inputs.ghas-category }}"
           sarif_file: "iac-${{ inputs.ghas-category }}.sarif"
