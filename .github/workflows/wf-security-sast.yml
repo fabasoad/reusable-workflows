@@ -168,7 +168,7 @@ jobs:
           echo "java-version=${java_version}" >> "$GITHUB_OUTPUT"
       - name: Setup Java
         if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: "temurin"
           java-version: "${{ steps.java-metadata.outputs.java-version }}"
@@ -181,7 +181,7 @@ jobs:
           artifact-retention-days: "3"
       # End: Java
       - name: Initialize
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: "${{ inputs.code-scanning-languages }}"
           build-mode: "${{ inputs.code-scanning-build-mode }}"
@@ -190,7 +190,7 @@ jobs:
               - dist/index.js
       - name: Autobuild
         if: ${{ inputs.code-scanning-build-mode == 'autobuild' }}
-        uses: github/codeql-action/autobuild@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/autobuild@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
       - name: Manual build
         if: ${{ inputs.code-scanning-build-mode == 'manual' }}
         env:
@@ -199,7 +199,7 @@ jobs:
         run: "${{ inputs.code-scanning-build-command }}"
       - name: Perform analysis
         id: code-scanning
-        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "code-scanning-${{ inputs.ghas-category }}"
   sca-grype:
@@ -221,7 +221,7 @@ jobs:
           severity-cutoff: "${{ inputs.sca-severity-threshold }}"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "sca-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.sca.outputs.sarif }}"
@@ -273,7 +273,7 @@ jobs:
             --file "${sarif_path}"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "image-${{ inputs.ghas-category }}"
           sarif_file: "${{ steps.image.outputs.sarif-path }}"
@@ -300,7 +300,7 @@ jobs:
           trivy-config: "trivy.yaml"
       - name: Upload to GHAS
         if: always()
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "iac-${{ inputs.ghas-category }}"
           sarif_file: "iac-${{ inputs.ghas-category }}.sarif"
