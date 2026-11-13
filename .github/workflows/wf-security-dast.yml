@@ -40,13 +40,13 @@ jobs:
           token: ${{ secrets.github-token || github.token }}
       - name: Upload SARIF as artifact
         if: always() && hashFiles('nuclei.sarif') != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuclei.sarif
           path: nuclei.sarif
       - name: Upload to GHAS
         if: always() && hashFiles('nuclei.sarif') != ''
-        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           category: "nuclei-${{ inputs.ghas-category }}"
           sarif_file: nuclei.sarif
@@ -71,7 +71,7 @@ jobs:
         with:
           target-url: "${{ inputs.target-url }}"
       - name: Upload report as artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: report-dastardly
           path: dastardly-report.xml
@@ -88,7 +88,7 @@ jobs:
           fail: "high"
       - name: Upload report as artifact
         if: steps.pentesttools-scan.outputs.result != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: report.ptt
           path: "${{ steps.pentesttools-scan.outputs.result }}"
