@@ -116,9 +116,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      DEFAULT_JAVA_VERSION: "26"
-      DEFAULT_GRADLE_VERSION: "9.4.1"
-      DEFAULT_NODE_VERSION: "25"
+      DEFAULT_JAVA_VERSION: "27"
+      DEFAULT_GRADLE_VERSION: "9.9.2"
+      DEFAULT_NODE_VERSION: "26"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -168,7 +168,7 @@ jobs:
           echo "java-version=${java_version}" >> "$GITHUB_OUTPUT"
       - name: Setup Java
         if: contains(format(',{0},', inputs.code-scanning-languages), ',java,')
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: "temurin"
           java-version: "${{ steps.java-metadata.outputs.java-version }}"
@@ -240,7 +240,7 @@ jobs:
         with:
           persist-credentials: "false"
       - name: Perform review
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
         with:
           config-file: "fabasoad/reusable-workflows/.github/dependency-review-config.yml@main"
           external-repo-token: "${{ github.token }}"
