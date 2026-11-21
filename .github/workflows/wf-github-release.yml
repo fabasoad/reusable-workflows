@@ -28,6 +28,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: "${{ inputs.ref }}"
+          persist-credentials: "true"
       - name: Create release
         uses: elgohr/Github-Release-Action@c5ea99036abb741a89f8bf1f2cd7fba845e3313a # v5
         env:

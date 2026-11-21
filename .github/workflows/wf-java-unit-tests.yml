@@ -38,8 +38,8 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      DEFAULT_JAVA_VERSION: "26"
-      DEFAULT_GRADLE_VERSION: "9.4.1"
+      DEFAULT_JAVA_VERSION: "27"
+      DEFAULT_GRADLE_VERSION: "9.9.2"
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
