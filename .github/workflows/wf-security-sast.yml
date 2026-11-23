@@ -219,6 +219,148 @@ jobs:
           by-cve: "true"
           path: "${{ inputs.sca-path }}"
           severity-cutoff: "${{ inputs.sca-severity-threshold }}"
+      - name: Show results
+        if: always()
+        env:
+          SARIF_FILE: "${{ steps.sca.outputs.sarif }}"
+          SUMMARY_TITLE: "Grype SCA scan results"
+          PRINT_TABLE: "true"
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import os
+          import re
+          import sys
+          from collections import Counter
+
+          SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Negligible", "Unknown"]
+
+
+          def field(text, name):
+              match = re.search(rf"^{re.escape(name)}:[ \t]*(.*)$", text or "", re.M)
+              return match.group(1).strip() if match else ""
+
+
+          def main():
+              sarif_file = os.environ.get("SARIF_FILE", "")
+              title = os.environ.get("SUMMARY_TITLE", "Grype scan results")
+              print_table = os.environ.get("PRINT_TABLE", "true") == "true"
+              summary_file = os.environ.get("GITHUB_STEP_SUMMARY", "")
+
+              def write_summary(text):
+                  if summary_file:
+                      with open(summary_file, "a", encoding="utf-8") as handle:
+                          handle.write(text)
+
+              if not sarif_file or not os.path.isfile(sarif_file):
+                  print(f"No Grype SARIF report found at '{sarif_file}'; nothing to show.")
+                  write_summary(f"## {title}\n\nNo SARIF report was produced.\n")
+                  return
+
+              with open(sarif_file, encoding="utf-8") as handle:
+                  report = json.load(handle)
+
+              findings = []
+              for run in report.get("runs", []):
+                  driver = run.get("tool", {}).get("driver", {})
+                  rules = {}
+                  for rule in driver.get("rules", []):
+                      help_text = rule.get("help", {}).get("text", "")
+                      short = rule.get("shortDescription", {}).get("text", "")
+                      vuln = field(help_text, "Vulnerability")
+                      if not vuln:
+                          match = re.match(r"^(\S+)\s", short)
+                          vuln = match.group(1) if match else rule.get("id", "")
+                      severity = field(help_text, "Severity")
+                      if not severity:
+                          match = re.search(r"\b\w+ vulnerability\b", short)
+                          severity = match.group(0).split()[0] if match else "unknown"
+                      rules[rule.get("id", "")] = {
+                          "package": field(help_text, "Package"),
+                          "version": field(help_text, "Version"),
+                          "fixed": field(help_text, "Fix Version"),
+                          "type": field(help_text, "Type"),
+                          "vulnerability": vuln,
+                          "severity": severity.capitalize(),
+                      }
+                  for result in run.get("results", []):
+                      finding = dict(rules.get(result.get("ruleId", ""), {}))
+                      if not finding.get("package"):
+                          match = re.search(
+                              r"vulnerability in \S+ package: (.+), version (\S+)",
+                              result.get("message", {}).get("text", ""),
+                          )
+                          if match:
+                              finding["package"] = match.group(1)
+                              finding["version"] = match.group(2)
+                          finding.setdefault("vulnerability", result.get("ruleId", ""))
+                          finding.setdefault("severity", "Unknown")
+                      finding.setdefault("fixed", "")
+                      finding.setdefault("type", "")
+                      findings.append(finding)
+
+              counts = Counter(f["severity"] for f in findings)
+              ordered = [s for s in SEVERITY_ORDER if s in counts]
+              ordered += [s for s in counts if s not in SEVERITY_ORDER]
+              counts_text = ", ".join(f"{s}: {counts[s]}" for s in ordered)
+
+              print(f"Grype findings: {len(findings)} total ({counts_text or 'none'})")
+              if print_table and findings:
+                  headers = ["NAME", "INSTALLED", "FIXED IN", "TYPE", "VULNERABILITY", "SEVERITY"]
+                  rows = [
+                      [
+                          f["package"],
+                          f["version"],
+                          f["fixed"],
+                          f["type"],
+                          f["vulnerability"],
+                          f["severity"],
+                      ]
+                      for f in findings
+                  ]
+                  widths = [
+                      max(len(headers[i]), *(len(row[i]) for row in rows))
+                      for i in range(len(headers))
+                  ]
+                  fmt = "  ".join(f"{{:<{w}}}" for w in widths)
+                  print(fmt.format(*headers))
+                  for row in rows:
+                      print(fmt.format(*row))
+
+              def esc(value):
+                  return value.replace("|", "\\|")
+
+              lines = [f"## {title}", "", f"**Total findings:** {len(findings)}", ""]
+              if findings:
+                  lines += ["| Severity | Count |", "| --- | --- |"]
+                  lines += [f"| {s} | {counts[s]} |" for s in ordered]
+                  lines += [
+                      "",
+                      "| Package | Installed | Fixed in | Type | Vulnerability | Severity |",
+                      "| --- | --- | --- | --- | --- | --- |",
+                  ]
+                  lines += [
+                      "| {} | {} | {} | {} | {} | {} |".format(
+                          esc(f["package"]),
+                          esc(f["version"]),
+                          esc(f["fixed"]),
+                          esc(f["type"]),
+                          esc(f["vulnerability"]),
+                          esc(f["severity"]),
+                      )
+                      for f in findings
+                  ]
+              lines.append("")
+              write_summary("\n".join(lines))
+
+
+          if __name__ == "__main__":
+              try:
+                  main()
+              except Exception as error:  # never fail the job from the reporting step
+                  print(f"::warning::Could not render Grype results: {error}")
+              sys.exit(0)
+          PYEOF
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
@@ -269,8 +411,150 @@ jobs:
             "docker-archive:${{ steps.download-artifact.outputs.download-path }}/${{ inputs.image-artifact-name }}.tar" \
             --by-cve \
             --fail-on="${INPUT_SEVERITY_THRESHOLD}" \
-            --output sarif \
-            --file "${sarif_path}"
+            --output table \
+            --output "sarif=${sarif_path}"
+      - name: Show results
+        if: always()
+        env:
+          SARIF_FILE: "${{ steps.image.outputs.sarif-path }}"
+          SUMMARY_TITLE: "Grype image scan results"
+          PRINT_TABLE: "false"
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import os
+          import re
+          import sys
+          from collections import Counter
+
+          SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Negligible", "Unknown"]
+
+
+          def field(text, name):
+              match = re.search(rf"^{re.escape(name)}:[ \t]*(.*)$", text or "", re.M)
+              return match.group(1).strip() if match else ""
+
+
+          def main():
+              sarif_file = os.environ.get("SARIF_FILE", "")
+              title = os.environ.get("SUMMARY_TITLE", "Grype scan results")
+              print_table = os.environ.get("PRINT_TABLE", "true") == "true"
+              summary_file = os.environ.get("GITHUB_STEP_SUMMARY", "")
+
+              def write_summary(text):
+                  if summary_file:
+                      with open(summary_file, "a", encoding="utf-8") as handle:
+                          handle.write(text)
+
+              if not sarif_file or not os.path.isfile(sarif_file):
+                  print(f"No Grype SARIF report found at '{sarif_file}'; nothing to show.")
+                  write_summary(f"## {title}\n\nNo SARIF report was produced.\n")
+                  return
+
+              with open(sarif_file, encoding="utf-8") as handle:
+                  report = json.load(handle)
+
+              findings = []
+              for run in report.get("runs", []):
+                  driver = run.get("tool", {}).get("driver", {})
+                  rules = {}
+                  for rule in driver.get("rules", []):
+                      help_text = rule.get("help", {}).get("text", "")
+                      short = rule.get("shortDescription", {}).get("text", "")
+                      vuln = field(help_text, "Vulnerability")
+                      if not vuln:
+                          match = re.match(r"^(\S+)\s", short)
+                          vuln = match.group(1) if match else rule.get("id", "")
+                      severity = field(help_text, "Severity")
+                      if not severity:
+                          match = re.search(r"\b\w+ vulnerability\b", short)
+                          severity = match.group(0).split()[0] if match else "unknown"
+                      rules[rule.get("id", "")] = {
+                          "package": field(help_text, "Package"),
+                          "version": field(help_text, "Version"),
+                          "fixed": field(help_text, "Fix Version"),
+                          "type": field(help_text, "Type"),
+                          "vulnerability": vuln,
+                          "severity": severity.capitalize(),
+                      }
+                  for result in run.get("results", []):
+                      finding = dict(rules.get(result.get("ruleId", ""), {}))
+                      if not finding.get("package"):
+                          match = re.search(
+                              r"vulnerability in \S+ package: (.+), version (\S+)",
+                              result.get("message", {}).get("text", ""),
+                          )
+                          if match:
+                              finding["package"] = match.group(1)
+                              finding["version"] = match.group(2)
+                          finding.setdefault("vulnerability", result.get("ruleId", ""))
+                          finding.setdefault("severity", "Unknown")
+                      finding.setdefault("fixed", "")
+                      finding.setdefault("type", "")
+                      findings.append(finding)
+
+              counts = Counter(f["severity"] for f in findings)
+              ordered = [s for s in SEVERITY_ORDER if s in counts]
+              ordered += [s for s in counts if s not in SEVERITY_ORDER]
+              counts_text = ", ".join(f"{s}: {counts[s]}" for s in ordered)
+
+              print(f"Grype findings: {len(findings)} total ({counts_text or 'none'})")
+              if print_table and findings:
+                  headers = ["NAME", "INSTALLED", "FIXED IN", "TYPE", "VULNERABILITY", "SEVERITY"]
+                  rows = [
+                      [
+                          f["package"],
+                          f["version"],
+                          f["fixed"],
+                          f["type"],
+                          f["vulnerability"],
+                          f["severity"],
+                      ]
+                      for f in findings
+                  ]
+                  widths = [
+                      max(len(headers[i]), *(len(row[i]) for row in rows))
+                      for i in range(len(headers))
+                  ]
+                  fmt = "  ".join(f"{{:<{w}}}" for w in widths)
+                  print(fmt.format(*headers))
+                  for row in rows:
+                      print(fmt.format(*row))
+
+              def esc(value):
+                  return value.replace("|", "\\|")
+
+              lines = [f"## {title}", "", f"**Total findings:** {len(findings)}", ""]
+              if findings:
+                  lines += ["| Severity | Count |", "| --- | --- |"]
+                  lines += [f"| {s} | {counts[s]} |" for s in ordered]
+                  lines += [
+                      "",
+                      "| Package | Installed | Fixed in | Type | Vulnerability | Severity |",
+                      "| --- | --- | --- | --- | --- | --- |",
+                  ]
+                  lines += [
+                      "| {} | {} | {} | {} | {} | {} |".format(
+                          esc(f["package"]),
+                          esc(f["version"]),
+                          esc(f["fixed"]),
+                          esc(f["type"]),
+                          esc(f["vulnerability"]),
+                          esc(f["severity"]),
+                      )
+                      for f in findings
+                  ]
+              lines.append("")
+              write_summary("\n".join(lines))
+
+
+          if __name__ == "__main__":
+              try:
+                  main()
+              except Exception as error:  # never fail the job from the reporting step
+                  print(f"::warning::Could not render Grype results: {error}")
+              sys.exit(0)
+          PYEOF
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
