@@ -231,11 +231,11 @@ jobs:
             --output "sarif=${sarif_path}"
       - name: Show results
         if: always()
+        shell: python
         env:
           SARIF_FILE: "${{ steps.sca.outputs.sarif-path }}"
           SUMMARY_TITLE: "Grype SCA scan results"
         run: |
-          python3 - <<'PYEOF'
           import json
           import os
           import re
@@ -347,7 +347,6 @@ jobs:
               except Exception as error:  # never fail the job from the reporting step
                   print(f"::warning::Could not render Grype results: {error}")
               sys.exit(0)
-          PYEOF
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
@@ -402,11 +401,11 @@ jobs:
             --output "sarif=${sarif_path}"
       - name: Show results
         if: always()
+        shell: python
         env:
           SARIF_FILE: "${{ steps.image.outputs.sarif-path }}"
           SUMMARY_TITLE: "Grype image scan results"
         run: |
-          python3 - <<'PYEOF'
           import json
           import os
           import re
@@ -518,7 +517,6 @@ jobs:
               except Exception as error:  # never fail the job from the reporting step
                   print(f"::warning::Could not render Grype results: {error}")
               sys.exit(0)
-          PYEOF
       - name: Upload to GHAS
         if: always()
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
