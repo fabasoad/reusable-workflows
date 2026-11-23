@@ -212,19 +212,28 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: "false"
+      - name: Setup Grype
+        id: setup-grype
+        uses: anchore/scan-action/download-grype@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
       - name: Perform analysis
         id: sca
-        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
-        with:
-          by-cve: "true"
-          path: "${{ inputs.sca-path }}"
-          severity-cutoff: "${{ inputs.sca-severity-threshold }}"
+        env:
+          INPUT_PATH: "${{ inputs.sca-path }}"
+          INPUT_SEVERITY_THRESHOLD: "${{ inputs.sca-severity-threshold }}"
+        run: |
+          sarif_path="${RUNNER_TEMP}/$(date +%s).sarif"
+          echo "sarif-path=${sarif_path}" >> "$GITHUB_OUTPUT"
+          ${{ steps.setup-grype.outputs.cmd }} \
+            "dir:${INPUT_PATH}" \
+            --by-cve \
+            --fail-on="${INPUT_SEVERITY_THRESHOLD}" \
+            --output table \
+            --output "sarif=${sarif_path}"
       - name: Show results
         if: always()
         env:
-          SARIF_FILE: "${{ steps.sca.outputs.sarif }}"
+          SARIF_FILE: "${{ steps.sca.outputs.sarif-path }}"
           SUMMARY_TITLE: "Grype SCA scan results"
-          PRINT_TABLE: "true"
         run: |
           python3 - <<'PYEOF'
           import json
@@ -244,7 +253,6 @@ jobs:
           def main():
               sarif_file = os.environ.get("SARIF_FILE", "")
               title = os.environ.get("SUMMARY_TITLE", "Grype scan results")
-              print_table = os.environ.get("PRINT_TABLE", "true") == "true"
               summary_file = os.environ.get("GITHUB_STEP_SUMMARY", "")
 
               def write_summary(text):
@@ -305,27 +313,6 @@ jobs:
               counts_text = ", ".join(f"{s}: {counts[s]}" for s in ordered)
 
               print(f"Grype findings: {len(findings)} total ({counts_text or 'none'})")
-              if print_table and findings:
-                  headers = ["NAME", "INSTALLED", "FIXED IN", "TYPE", "VULNERABILITY", "SEVERITY"]
-                  rows = [
-                      [
-                          f["package"],
-                          f["version"],
-                          f["fixed"],
-                          f["type"],
-                          f["vulnerability"],
-                          f["severity"],
-                      ]
-                      for f in findings
-                  ]
-                  widths = [
-                      max(len(headers[i]), *(len(row[i]) for row in rows))
-                      for i in range(len(headers))
-                  ]
-                  fmt = "  ".join(f"{{:<{w}}}" for w in widths)
-                  print(fmt.format(*headers))
-                  for row in rows:
-                      print(fmt.format(*row))
 
               def esc(value):
                   return value.replace("|", "\\|")
@@ -366,7 +353,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "sca-${{ inputs.ghas-category }}"
-          sarif_file: "${{ steps.sca.outputs.sarif }}"
+          sarif_file: "${{ steps.sca.outputs.sarif-path }}"
   #  sca-osv-scanner:
   #    name: SCA (OSV Scanner)
   #    if: inputs.sca && inputs.sca-vendor == 'osv-scanner'
@@ -418,7 +405,6 @@ jobs:
         env:
           SARIF_FILE: "${{ steps.image.outputs.sarif-path }}"
           SUMMARY_TITLE: "Grype image scan results"
-          PRINT_TABLE: "false"
         run: |
           python3 - <<'PYEOF'
           import json
@@ -438,7 +424,6 @@ jobs:
           def main():
               sarif_file = os.environ.get("SARIF_FILE", "")
               title = os.environ.get("SUMMARY_TITLE", "Grype scan results")
-              print_table = os.environ.get("PRINT_TABLE", "true") == "true"
               summary_file = os.environ.get("GITHUB_STEP_SUMMARY", "")
 
               def write_summary(text):
@@ -499,27 +484,6 @@ jobs:
               counts_text = ", ".join(f"{s}: {counts[s]}" for s in ordered)
 
               print(f"Grype findings: {len(findings)} total ({counts_text or 'none'})")
-              if print_table and findings:
-                  headers = ["NAME", "INSTALLED", "FIXED IN", "TYPE", "VULNERABILITY", "SEVERITY"]
-                  rows = [
-                      [
-                          f["package"],
-                          f["version"],
-                          f["fixed"],
-                          f["type"],
-                          f["vulnerability"],
-                          f["severity"],
-                      ]
-                      for f in findings
-                  ]
-                  widths = [
-                      max(len(headers[i]), *(len(row[i]) for row in rows))
-                      for i in range(len(headers))
-                  ]
-                  fmt = "  ".join(f"{{:<{w}}}" for w in widths)
-                  print(fmt.format(*headers))
-                  for row in rows:
-                      print(fmt.format(*row))
 
               def esc(value):
                   return value.replace("|", "\\|")
